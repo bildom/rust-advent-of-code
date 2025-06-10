@@ -10,7 +10,7 @@ puzzle_solver!(
             let presents = input
                 .lines()
                 .map(Present::new)
-                .collect::<Result<Vec<Present>, _>>()
+                .collect::<anyhow::Result<Vec<_>>>()
                 .with_context(|| "could not create presents")?;
 
             let (area, ribbon_length) = presents

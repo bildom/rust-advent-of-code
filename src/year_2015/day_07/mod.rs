@@ -16,20 +16,18 @@ puzzle_solver!(
 
             let a_id = NodeId::from("a")?;
 
-            let first_value_of_wire_a = if let Some(value) = circuit.get_node_value(a_id) {
-                value
-            } else {
-                anyhow::bail!("could not calculate wire 'a' value on the first pass");
+            let first_value_of_wire_a = match circuit.get_node_value(a_id) {
+                Some(value) => value,
+                None => anyhow::bail!("could not calculate wire 'a' value on the first pass"),
             };
 
             let b_id = NodeId::from("b")?;
             circuit.clear();
             circuit.set(b_id, Node::Simple(Input::Value(first_value_of_wire_a)));
 
-            let second_value_of_wire_a = if let Some(value) = circuit.get_node_value(a_id) {
-                value
-            } else {
-                anyhow::bail!("could not calculate wire 'a' value on the second pass");
+            let second_value_of_wire_a = match circuit.get_node_value(a_id) {
+                Some(value) => value,
+                None => anyhow::bail!("could not calculate wire 'a' value on the second pass"),
             };
 
             answer!(first_value_of_wire_a, second_value_of_wire_a);

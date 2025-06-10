@@ -6,8 +6,6 @@ pub struct Present {
 }
 
 impl Present {
-    const DIMENSION_SEPARATOR: char = 'x';
-
     pub fn get_wrapping_paper_area(&self) -> u32 {
         self.wrapping_paper_area
     }
@@ -17,7 +15,9 @@ impl Present {
     }
 
     pub fn new(text: &str) -> anyhow::Result<Self> {
-        let dimensions: Vec<&str> = text.split(Present::DIMENSION_SEPARATOR).collect();
+        const SEPARATOR: char = 'x';
+
+        let dimensions: Vec<&str> = text.split(SEPARATOR).collect();
 
         let dimensions = dimensions.iter()
             .map(|d| {
@@ -25,7 +25,7 @@ impl Present {
                     .with_context(|| format!("could not parse '{d}' as number"))
             })
             .collect::<anyhow::Result<Vec<_>>>()
-            .with_context(|| format!("could not parse dimensions: '{text}' - use L{x}W{x}H pattern, where L = length, W = width, H = height", x = Present::DIMENSION_SEPARATOR))?;
+            .with_context(|| format!("could not parse dimensions: '{text}' - use L{x}W{x}H pattern, where L = length, W = width, H = height", x = SEPARATOR))?;
 
         if dimensions.len() != 3 {
             anyhow::bail!("expected 3 dimensions in '{text}'");

@@ -17,9 +17,6 @@ impl Default for Elevator {
 }
 
 impl Elevator {
-    const FLOOR_UP: char = '(';
-    const FLOOR_DOWN: char = ')';
-
     pub fn get_floor(&self) -> i32 {
         self.floor
     }
@@ -29,15 +26,18 @@ impl Elevator {
     }
 
     pub fn process(&mut self, instruction: char) -> anyhow::Result<()> {
+        const FLOOR_UP: char = '(';
+        const FLOOR_DOWN: char = ')';
+
         match instruction {
-            Elevator::FLOOR_UP => self.floor += 1,
-            Elevator::FLOOR_DOWN => self.floor -= 1,
+            FLOOR_UP => self.floor += 1,
+            FLOOR_DOWN => self.floor -= 1,
 
             other => {
                 anyhow::bail!(
                     "invalid character '{other}' (only '{up}' and '{down}' allowed)",
-                    up = Elevator::FLOOR_UP,
-                    down = Elevator::FLOOR_DOWN,
+                    up = FLOOR_UP,
+                    down = FLOOR_DOWN,
                 );
             }
         }

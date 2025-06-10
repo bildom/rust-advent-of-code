@@ -111,7 +111,7 @@ impl LightArray<bool> {
         self.array
             .iter()
             .map(|x| x.iter().filter(|x| **x).count())
-            .sum::<usize>()
+            .sum()
     }
 }
 
@@ -134,6 +134,6 @@ impl LightArray<u16> {
         self.array
             .iter()
             .map(|x| x.iter().filter(|&x| *x > 0).map(|x| *x as u32).sum::<u32>())
-            .sum::<u32>()
+            .sum()
     }
 }

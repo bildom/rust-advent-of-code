@@ -23,9 +23,6 @@ impl Criteria for FirstYearCriteria {
 }
 
 impl FirstYearCriteria {
-    const VOWELS: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
-    const DISALLOWED_SUBSTRINGS: [&'static str; 4] = ["ab", "cd", "pq", "xy"];
-
     fn check_letter_twice_in_the_row(&mut self, substr: &[u8]) {
         if self.has_letter_twice_in_the_row || substr.len() < 2 {
             return;
@@ -35,17 +32,21 @@ impl FirstYearCriteria {
     }
 
     fn check_vowel(&mut self, c: char) {
-        if FirstYearCriteria::VOWELS.contains(&c) {
+        const VOWELS: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
+
+        if VOWELS.contains(&c) {
             self.vowels_count += 1;
         }
     }
 
     fn check_disallowed_substring(&mut self, substr: &[u8]) {
+        const DISALLOWED_SUBSTRINGS: [&str; 4] = ["ab", "cd", "pq", "xy"];
+
         if self.has_disallowed_substring || substr.len() < 2 {
             return;
         }
 
-        for disallowed in FirstYearCriteria::DISALLOWED_SUBSTRINGS {
+        for disallowed in DISALLOWED_SUBSTRINGS {
             if substr.starts_with(disallowed.as_bytes()) {
                 self.has_disallowed_substring = true;
                 break;

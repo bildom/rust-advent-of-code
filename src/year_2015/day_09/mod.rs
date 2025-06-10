@@ -7,6 +7,7 @@ puzzle_solver!(
     [2015, 9] = {
         fn solve(&mut self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
             let mut planner = TravelPlanner::build_from(input)?;
+
             planner.calculate_distances()?;
 
             let min_distance = planner.get_min_dist().unwrap();

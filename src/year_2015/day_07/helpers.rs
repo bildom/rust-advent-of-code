@@ -56,10 +56,9 @@ impl NodeParser {
     }
 
     fn parse_input(input: &str) -> anyhow::Result<Input> {
-        let input = if let Ok(value) = input.parse::<u16>() {
-            Input::Value(value)
-        } else {
-            Input::Node(NodeId::from(input)?)
+        let input = match input.parse::<u16>() {
+            Ok(value) => Input::Value(value),
+            Err(_) => Input::Node(NodeId::from(input)?),
         };
 
         Ok(input)

@@ -101,17 +101,15 @@ impl TravelPlanner {
                 self.solve_traveling_salesman_problem(loc_idx, loc_visited, sum_distance)?;
             }
         } else {
-            self.min_dist = if let Some(min_distance) = self.min_dist {
-                Some(min(min_distance, sum_distance))
-            } else {
-                Some(sum_distance)
+            self.min_dist = match self.min_dist {
+                Some(min_dist) => Some(min(min_dist, sum_distance)),
+                None => Some(sum_distance),
             };
 
-            self.max_dist = if let Some(max_dist) = self.max_dist {
-                Some(max(max_dist, sum_distance))
-            } else {
-                Some(sum_distance)
-            }
+            self.max_dist = match self.max_dist {
+                Some(max_dist) => Some(max(max_dist, sum_distance)),
+                None => Some(sum_distance),
+            };
         }
 
         loc_visited.pop();
