@@ -89,7 +89,7 @@ macro_rules! puzzle_test_file_input {
             use std::io::Read;
             use $crate::puzzle::Solver;
 
-            let path = format!("tests/{year}/{day:0>2}", year = $year, day = $day);
+            let path = format!("test_data/{year}/{day:0>2}", year = $year, day = $day);
             let input_path = format!("{path}/input.txt");
             let solution_path = format!("{path}/solution.txt");
 

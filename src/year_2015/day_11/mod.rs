@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_11::helpers::PasswordGenerator;
+use crate::year_2015::day_11::helpers::*;
 
 mod helpers;
 
@@ -15,4 +15,26 @@ puzzle_solver!(
 );
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::puzzle::Solver;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case("abcdefgh", "abcdffaa", "abcdffbb")]
+    #[case("ghijklmn", "ghjaabcc", "ghjbbcdd")]
+    fn positive_tests(
+        #[case] input: &str,
+        #[case] expected_next_password: &str,
+        #[case] expected_another_password: &str,
+    ) {
+        let solution = Puzzle.solve(input);
+
+        assert!(solution.is_ok());
+
+        let solution = solution.unwrap();
+
+        assert_eq!(solution.results[0], expected_next_password);
+        assert_eq!(solution.results[1], expected_another_password);
+    }
+}

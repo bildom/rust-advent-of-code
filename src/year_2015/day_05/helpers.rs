@@ -1,6 +1,18 @@
+pub struct NiceStringValidator;
+
+impl NiceStringValidator {
+    pub fn validate<T>(input: &str) -> bool
+    where
+        T: Criteria + Default,
+    {
+        let criteria = T::default();
+        let input = input.as_bytes();
+        criteria.check_criteria(input)
+    }
+}
+
 pub trait Criteria {
-    fn check_criteria(&mut self, substr: &[u8]);
-    fn is_nice(&self) -> bool;
+    fn check_criteria(self, substr: &[u8]) -> bool;
 }
 
 #[derive(Default)]
@@ -11,13 +23,14 @@ pub struct FirstYearCriteria {
 }
 
 impl Criteria for FirstYearCriteria {
-    fn check_criteria(&mut self, substr: &[u8]) {
-        self.check_letter_twice_in_the_row(substr);
-        self.check_vowel(substr[0] as char);
-        self.check_disallowed_substring(substr);
-    }
+    fn check_criteria(mut self, input: &[u8]) -> bool {
+        for i in 0..input.len() {
+            let substr = &input[i..];
+            self.check_letter_twice_in_the_row(substr);
+            self.check_vowel(substr[0] as char);
+            self.check_disallowed_substring(substr);
+        }
 
-    fn is_nice(&self) -> bool {
         self.has_letter_twice_in_the_row && self.vowels_count >= 3 && !self.has_disallowed_substring
     }
 }
@@ -32,21 +45,17 @@ impl FirstYearCriteria {
     }
 
     fn check_vowel(&mut self, c: char) {
-        const VOWELS: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
-
-        if VOWELS.contains(&c) {
+        if ['a', 'e', 'i', 'o', 'u'].contains(&c) {
             self.vowels_count += 1;
         }
     }
 
     fn check_disallowed_substring(&mut self, substr: &[u8]) {
-        const DISALLOWED_SUBSTRINGS: [&str; 4] = ["ab", "cd", "pq", "xy"];
-
         if self.has_disallowed_substring || substr.len() < 2 {
             return;
         }
 
-        for disallowed in DISALLOWED_SUBSTRINGS {
+        for disallowed in ["ab", "cd", "pq", "xy"] {
             if substr.starts_with(disallowed.as_bytes()) {
                 self.has_disallowed_substring = true;
                 break;
@@ -62,12 +71,13 @@ pub struct SecondYearCriteria {
 }
 
 impl Criteria for SecondYearCriteria {
-    fn check_criteria(&mut self, substr: &[u8]) {
-        self.check_twice_a_pair(substr);
-        self.check_repeating_letter_with_a_letter_between(substr);
-    }
+    fn check_criteria(mut self, input: &[u8]) -> bool {
+        for i in 0..input.len() {
+            let substr = &input[i..];
+            self.check_twice_a_pair(substr);
+            self.check_repeating_letter_with_a_letter_between(substr);
+        }
 
-    fn is_nice(&self) -> bool {
         self.has_twice_a_pair && self.has_repeating_letter_with_a_letter_between
     }
 }

@@ -1,5 +1,7 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_05::helpers::*;
+use crate::year_2015::day_05::helpers::{
+    FirstYearCriteria, NiceStringValidator, SecondYearCriteria,
+};
 
 mod helpers;
 
@@ -10,21 +12,11 @@ puzzle_solver!(
             let mut second_year = 0u32;
 
             for line in input.lines() {
-                let mut first_year_criteria = FirstYearCriteria::default();
-                let mut second_year_criteria = SecondYearCriteria::default();
-
-                let line = line.as_bytes();
-                for i in 0..line.len() {
-                    let substr = &line[i..];
-                    first_year_criteria.check_criteria(substr);
-                    second_year_criteria.check_criteria(substr);
-                }
-
-                if first_year_criteria.is_nice() {
+                if NiceStringValidator::validate::<FirstYearCriteria>(line) {
                     first_year += 1;
                 }
 
-                if second_year_criteria.is_nice() {
+                if NiceStringValidator::validate::<SecondYearCriteria>(line) {
                     second_year += 1;
                 }
             }
@@ -57,11 +49,7 @@ mod tests {
         #[case] expected_first_year: u32,
         #[case] expected_second_year: u32,
     ) {
-        let answer = Puzzle.solve(input);
-
-        assert!(answer.is_ok());
-
-        let answer = answer.unwrap();
+        let answer = Puzzle.solve(input).unwrap();
 
         assert_eq!(answer.results[0], expected_first_year.to_string());
         assert_eq!(answer.results[1], expected_second_year.to_string());

@@ -20,7 +20,7 @@ impl PasswordGenerator {
     ) -> anyhow::Result<ValidPassword> {
         loop {
             if idx < password.len() - 1 {
-                let skip = skip || !Self::check_allowed_char(password[idx]);
+                let skip = skip || Self::is_disallowed_char(password[idx]);
 
                 match Self::increment_password(password, idx + 1, skip) {
                     Ok(false) => (),
@@ -37,7 +37,7 @@ impl PasswordGenerator {
             password[idx] = next_c;
 
             if next_c == 'a' {
-                break Ok(false);
+                return Ok(false);
             }
 
             if Self::validate(password) {
@@ -46,10 +46,8 @@ impl PasswordGenerator {
         }
     }
 
-    fn check_allowed_char(c: char) -> bool {
-        const FORBIDDEN_CHARS: [char; 3] = ['i', 'o', 'l'];
-
-        !FORBIDDEN_CHARS.contains(&c)
+    fn is_disallowed_char(c: char) -> bool {
+        matches!(c, 'i' | 'o' | 'l')
     }
 
     fn get_next_char(c: char) -> anyhow::Result<char> {
@@ -61,7 +59,7 @@ impl PasswordGenerator {
                 'z' => 'a',
                 _ => anyhow::bail!("invalid character: {}", c),
             };
-            if Self::check_allowed_char(c) {
+            if !Self::is_disallowed_char(c) {
                 break Ok(c);
             }
         }
@@ -69,7 +67,7 @@ impl PasswordGenerator {
 
     fn validate(password: &[char]) -> bool {
         Self::check_three_increasing_letters(password)
-            && Self::check_non_overlapping_pairs(password) > 1
+            && Self::check_non_overlapping_pairs(password)
     }
 
     fn check_three_increasing_letters(password: &[char]) -> bool {
@@ -78,7 +76,7 @@ impl PasswordGenerator {
             .any(|w| w[2] as u32 == (w[1] as u32 + 1) && w[1] as u32 == (w[0] as u32 + 1))
     }
 
-    fn check_non_overlapping_pairs(password: &[char]) -> u8 {
+    fn check_non_overlapping_pairs(password: &[char]) -> bool {
         let mut pair_last_window = false;
         let mut count = 0u8;
 
@@ -91,6 +89,6 @@ impl PasswordGenerator {
             }
         }
 
-        count
+        count > 1
     }
 }

@@ -2,31 +2,22 @@ use regex::Regex;
 use std::collections::HashMap;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq)]
-pub struct NodeId(u16);
+pub struct NodeId(u64);
 
 impl NodeId {
     pub fn from(name: &str) -> anyhow::Result<Self> {
-        let bytes = name.as_bytes();
-
-        let id = if bytes.len() == 1 {
-            NodeId(bytes[0] as u16)
-        } else if bytes.len() == 2 {
-            NodeId(u16::from_le_bytes([bytes[1], bytes[0]]))
-        } else {
-            anyhow::bail!("invalid node name: {name}");
-        };
-
-        Ok(id)
+        let id = u64::from_str_radix(name, 36)?;
+        Ok(NodeId(id))
     }
 }
 
-pub struct NodeParser {
+pub struct Parser {
     re_simple: Regex,
     re_gate_one_input: Regex,
     re_gate_double_input: Regex,
 }
 
-impl Default for NodeParser {
+impl Default for Parser {
     fn default() -> Self {
         Self {
             re_simple: Regex::new(r"^(?<input>[a-z]{1,2}|[0-9]+) -> (?<name>[a-z]{1,2})$").unwrap(),
@@ -36,13 +27,7 @@ impl Default for NodeParser {
     }
 }
 
-impl NodeParser {
-    const AND: &'static str = "AND";
-    const OR: &'static str = "OR";
-    const NOT: &'static str = "NOT";
-    const RIGHT_SHIFT: &'static str = "RSHIFT";
-    const LEFT_SHIFT: &'static str = "LSHIFT";
-
+impl Parser {
     pub fn parse(&self, input: &str) -> anyhow::Result<(NodeId, Node)> {
         if let Some(caps) = self.re_simple.captures(input) {
             Self::parse_simple_node(&caps)
@@ -76,10 +61,12 @@ impl NodeParser {
         let instruction = &caps["instruction"];
         let input = Self::parse_input(&caps["input"])?;
 
-        match instruction {
-            NodeParser::NOT => Ok((id, Node::Negation(input))),
+        let result = match instruction {
+            "NOT" => (id, Node::Negation(input)),
             other => anyhow::bail!("invalid instruction: {other}"),
-        }
+        };
+
+        Ok(result)
     }
 
     fn parse_gate_double_input(caps: &regex::Captures<'_>) -> anyhow::Result<(NodeId, Node)> {
@@ -88,13 +75,15 @@ impl NodeParser {
         let left = Self::parse_input(&caps["left"])?;
         let right = Self::parse_input(&caps["right"])?;
 
-        match instruction {
-            NodeParser::AND => Ok((id, Node::AndGate(left, right))),
-            NodeParser::OR => Ok((id, Node::OrGate(left, right))),
-            NodeParser::RIGHT_SHIFT => Ok((id, Node::RightShift(left, right))),
-            NodeParser::LEFT_SHIFT => Ok((id, Node::LeftShift(left, right))),
+        let result = match instruction {
+            "AND" => (id, Node::AndGate(left, right)),
+            "OR" => (id, Node::OrGate(left, right)),
+            "RSHIFT" => (id, Node::RightShift(left, right)),
+            "LSHIFT" => (id, Node::LeftShift(left, right)),
             other => anyhow::bail!("invalid instruction: {other}"),
-        }
+        };
+
+        Ok(result)
     }
 }
 

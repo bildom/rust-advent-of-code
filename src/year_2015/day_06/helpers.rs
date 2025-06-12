@@ -2,19 +2,19 @@ use anyhow::Context;
 use regex::Regex;
 use std::ops::RangeInclusive;
 
-pub struct InstructionParser {
+pub struct Parser {
     pattern: Regex,
 }
 
-impl Default for InstructionParser {
+impl Default for Parser {
     fn default() -> Self {
-        InstructionParser {
-            pattern: Regex::new(r"^(?<instruction>\D+) (?<from_x>\d+),(?<from_y>\d+) through (?<to_x>\d+),(?<to_y>\d+)$").unwrap()
+        Parser {
+            pattern: Regex::new(r"^(?<instruction>turn on|turn off|toggle) (?<from_x>\d+),(?<from_y>\d+) through (?<to_x>\d+),(?<to_y>\d+)$").unwrap()
         }
     }
 }
 
-impl InstructionParser {
+impl Parser {
     pub fn parse(&self, line: &str) -> anyhow::Result<Instruction> {
         let caps = self
             .pattern

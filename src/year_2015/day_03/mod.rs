@@ -1,23 +1,23 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_03::helpers::*;
+use crate::year_2015::day_03::helpers::{Movement, PresentDelivery};
 
 mod helpers;
 
 puzzle_solver!(
     [2015, 3] = {
         fn solve(&mut self, input: &str) -> anyhow::Result<Answer> {
-            let mut first_year = FirstYear::default();
-            let mut second_year = SecondYear::default();
+            let mut first_year = PresentDelivery::new(1);
+            let mut second_year = PresentDelivery::new(2);
 
-            for (i, c) in input.chars().enumerate() {
+            for c in input.chars() {
                 let movement = Movement::from_char(c)?;
 
-                first_year.move_and_add(movement);
-                second_year.move_and_add(movement, i % 2);
+                first_year.move_and_add(movement)?;
+                second_year.move_and_add(movement)?;
             }
 
-            let first_year = first_year.count() as u32;
-            let second_year = second_year.count() as u32;
+            let first_year = first_year.count();
+            let second_year = second_year.count();
 
             answer!(first_year, second_year);
         }
@@ -41,11 +41,7 @@ mod tests {
         #[case] expected_first_year: u32,
         #[case] expected_second_year: u32,
     ) {
-        let answer = Puzzle.solve(input);
-
-        assert!(answer.is_ok());
-
-        let answer = answer.unwrap();
+        let answer = Puzzle.solve(input).unwrap();
 
         assert_eq!(answer.results[0], expected_first_year.to_string());
         assert_eq!(answer.results[1], expected_second_year.to_string());

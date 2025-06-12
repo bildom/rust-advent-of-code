@@ -1,5 +1,6 @@
 use crate::puzzle::{answer, puzzle_solver};
 use crate::year_2015::day_09::helpers::TravelPlanner;
+use anyhow::anyhow;
 
 mod helpers;
 
@@ -10,8 +11,13 @@ puzzle_solver!(
 
             planner.calculate_distances()?;
 
-            let min_distance = planner.get_min_dist().unwrap();
-            let max_distance = planner.get_max_dist().unwrap();
+            let min_distance = planner
+                .get_min_dist()
+                .ok_or_else(|| anyhow!("no minimal distance was calculated"))?;
+
+            let max_distance = planner
+                .get_max_dist()
+                .ok_or_else(|| anyhow!("no maximal distance was calculated"))?;
 
             answer!(min_distance, max_distance);
         }
@@ -22,18 +28,26 @@ puzzle_solver!(
 mod tests {
     use super::*;
     use crate::puzzle::Solver;
+    use rstest::rstest;
+    use unindent::unindent;
 
-    #[test]
-    fn positive_test() {
-        let input = "London to Dublin = 464\nLondon to Belfast = 518\nDublin to Belfast = 141";
+    const INPUT: &str = {
+        "London to Dublin = 464
+        London to Belfast = 518
+        Dublin to Belfast = 141"
+    };
+    
+    #[rstest]
+    #[case("A to B = 10", 10, 10)]
+    #[case(&unindent(INPUT), 605, 982)]
+    fn positive_tests(
+        #[case] input: &str,
+        #[case] expected_min_distance: u16,
+        #[case] expected_max_distance: u16,
+    ) {
+        let solution = Puzzle.solve(input).unwrap();
 
-        let solution = Puzzle.solve(input);
-
-        assert!(solution.is_ok());
-
-        let solution = solution.unwrap();
-
-        assert_eq!(solution.results[0], "605");
-        assert_eq!(solution.results[1], "982");
+        assert_eq!(solution.results[0], expected_min_distance.to_string());
+        assert_eq!(solution.results[1], expected_max_distance.to_string());
     }
 }

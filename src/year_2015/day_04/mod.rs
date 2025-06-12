@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_04::helpers::*;
+use crate::year_2015::day_04::helpers::Hasher;
 
 mod helpers;
 
@@ -32,11 +32,7 @@ mod tests {
         #[case] expected_for_5_zeros: u32,
         #[case] expected_for_6_zeros: u32,
     ) {
-        let answer = Puzzle.solve(input);
-
-        assert!(answer.is_ok());
-
-        let answer = answer.unwrap();
+        let answer = Puzzle.solve(input).unwrap();
 
         assert_eq!(answer.results[0], expected_for_5_zeros.to_string());
         assert_eq!(answer.results[1], expected_for_6_zeros.to_string());

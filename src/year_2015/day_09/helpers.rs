@@ -1,24 +1,24 @@
 use anyhow::anyhow;
+use itertools::Itertools;
 use regex::Regex;
 use std::cmp::{max, min};
 use std::collections::HashMap;
 
 type LocationIdx = usize;
-type Distance = u16;
 
 pub struct TravelPlanner {
     locations: Vec<String>,
-    distances: HashMap<LocationIdx, HashMap<LocationIdx, Distance>>,
-    min_dist: Option<Distance>,
-    max_dist: Option<Distance>,
+    distances: HashMap<(LocationIdx, LocationIdx), u16>,
+    min_dist: Option<u16>,
+    max_dist: Option<u16>,
 }
 
 impl TravelPlanner {
-    pub fn get_min_dist(&self) -> Option<Distance> {
+    pub fn get_min_dist(&self) -> Option<u16> {
         self.min_dist
     }
 
-    pub fn get_max_dist(&self) -> Option<Distance> {
+    pub fn get_max_dist(&self) -> Option<u16> {
         self.max_dist
     }
 
@@ -26,21 +26,19 @@ impl TravelPlanner {
         let mut locations = Vec::new();
         let mut distances = HashMap::new();
 
-        let parser = LocationParser::default();
+        let parser = Parser::default();
 
         for line in input.lines() {
             let distance = parser.parse(line)?;
-            let loc_idx_1 = Self::substitute_name_with_index(&distance.loc_1, &mut locations);
-            let loc_idx_2 = Self::substitute_name_with_index(&distance.loc_2, &mut locations);
+            let loc_idx_1 = Self::substitute_name_with_index(&distance.location_1, &mut locations);
+            let loc_idx_2 = Self::substitute_name_with_index(&distance.location_2, &mut locations);
 
             distances
-                .entry(loc_idx_1)
-                .or_insert(HashMap::new())
-                .insert(loc_idx_2, distance.value);
+                .entry((loc_idx_1, loc_idx_2))
+                .or_insert(distance.value);
             distances
-                .entry(loc_idx_2)
-                .or_insert(HashMap::new())
-                .insert(loc_idx_1, distance.value);
+                .entry((loc_idx_2, loc_idx_1))
+                .or_insert(distance.value);
         }
 
         Ok(Self {
@@ -53,54 +51,27 @@ impl TravelPlanner {
 
     fn substitute_name_with_index(location: &str, dictionary: &mut Vec<String>) -> LocationIdx {
         if let Some(idx) = dictionary.iter().position(|n| n == location) {
-            idx as LocationIdx
+            idx
         } else {
             dictionary.push(location.to_string());
-            dictionary.len() as LocationIdx - 1
+            dictionary.len() - 1
         }
     }
 
     pub fn calculate_distances(&mut self) -> anyhow::Result<()> {
-        if self.min_dist.is_none() {
-            let mut loc_visited = Vec::new();
-            let sum_distance = 0 as Distance;
-            for idx in 0..self.locations.len() {
-                self.solve_traveling_salesman_problem(idx, &mut loc_visited, sum_distance)?;
+        for permutation in (0..self.locations.len()).permutations(self.locations.len()) {
+            let mut sum_distance = 0;
+
+            for pair in permutation.windows(2) {
+                let from = pair[0];
+                let to = pair[1];
+
+                sum_distance += self
+                    .distances
+                    .get(&(from, to))
+                    .ok_or_else(|| anyhow!("could not find route: {from} to: {to}"))?;
             }
-        }
 
-        if self.min_dist.is_none() || self.max_dist.is_none() {
-            anyhow::bail!("could not find minimum distance");
-        }
-
-        Ok(())
-    }
-
-    fn solve_traveling_salesman_problem(
-        &mut self,
-        current_loc: LocationIdx,
-        loc_visited: &mut Vec<LocationIdx>,
-        sum_distance: Distance,
-    ) -> anyhow::Result<()> {
-        loc_visited.push(current_loc);
-
-        if loc_visited.len() < self.locations.len() {
-            for loc_idx in 0..self.locations.len() as LocationIdx {
-                if loc_visited.contains(&loc_idx) {
-                    continue;
-                }
-
-                let sum_distance = sum_distance
-                    + self
-                        .distances
-                        .get(&current_loc)
-                        .ok_or(anyhow!("no route found"))?
-                        .get(&loc_idx)
-                        .ok_or(anyhow!("no route found"))?;
-
-                self.solve_traveling_salesman_problem(loc_idx, loc_visited, sum_distance)?;
-            }
-        } else {
             self.min_dist = match self.min_dist {
                 Some(min_dist) => Some(min(min_dist, sum_distance)),
                 None => Some(sum_distance),
@@ -112,40 +83,38 @@ impl TravelPlanner {
             };
         }
 
-        loc_visited.pop();
-
         Ok(())
     }
 }
 
-struct LocationDistance {
-    loc_1: String,
-    loc_2: String,
+struct Distance {
+    location_1: String,
+    location_2: String,
     value: u16,
 }
 
-struct LocationParser {
+struct Parser {
     re: Regex,
 }
 
-impl Default for LocationParser {
+impl Default for Parser {
     fn default() -> Self {
         Self {
-            re: Regex::new(r"^(?<loc1>\S+) to (?<loc2>\S+) = (?<distance>\d+)$").unwrap(),
+            re: Regex::new(r"^(?<location1>\S+) to (?<location2>\S+) = (?<distance>\d+)$").unwrap(),
         }
     }
 }
 
-impl LocationParser {
-    fn parse(&self, input: &str) -> anyhow::Result<LocationDistance> {
+impl Parser {
+    fn parse(&self, input: &str) -> anyhow::Result<Distance> {
         if let Some(caps) = self.re.captures(input) {
-            let loc_1 = caps["loc1"].to_string();
-            let loc_2 = caps["loc2"].to_string();
+            let location_1 = caps["location1"].to_string();
+            let location_2 = caps["location2"].to_string();
             let distance = caps["distance"].parse::<u16>()?;
 
-            let result = LocationDistance {
-                loc_1,
-                loc_2,
+            let result = Distance {
+                location_1,
+                location_2,
                 value: distance,
             };
 

@@ -6,16 +6,34 @@ mod helpers;
 puzzle_solver!(
     [2015, 10] = {
         fn solve(&mut self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
-            let result_1 = LookAndSay::run(input, 40);
-            let result_2 = LookAndSay::run(&result_1, 10);
+            let after_40 = LookAndSay::run(input, 40);
+            let after_50 = LookAndSay::run(&after_40, 10);
 
-            let len_40_iter = result_1.len();
-            let len_50_iter = result_2.len();
+            let length_after_40 = after_40.len();
+            let length_after_50 = after_50.len();
 
-            answer!(len_40_iter, len_50_iter);
+            answer!(length_after_40, length_after_50);
         }
     }
 );
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::puzzle::Solver;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case("1", 82350, 1166642)]
+    #[case("22", 2, 2)]
+    fn positive_tests(
+        #[case] input: &str,
+        #[case] expected_len_after_40: usize,
+        #[case] expected_len_after_50: usize,
+    ) {
+        let solution = Puzzle.solve(input).unwrap();
+
+        assert_eq!(solution.results[0], expected_len_after_40.to_string());
+        assert_eq!(solution.results[1], expected_len_after_50.to_string());
+    }
+}

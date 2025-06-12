@@ -1,59 +1,39 @@
 use std::collections::HashMap;
 
-pub struct FirstYear {
+pub struct PresentDelivery {
     counter: PresentCounter,
-    coordinates: Coordinates,
+    deliverers_position: Vec<Coordinates>,
+    current_deliverer: usize,
 }
 
-impl Default for FirstYear {
-    fn default() -> Self {
+impl PresentDelivery {
+    pub fn new(deliverers_count: usize) -> Self {
         let mut counter = PresentCounter::default();
-        let coordinates = Coordinates::default();
+        let deliverers_position = vec![Coordinates::default(); deliverers_count];
 
-        counter.add(coordinates);
+        for coordinates in deliverers_position.iter() {
+            counter.add(*coordinates);
+        }
 
         Self {
             counter,
-            coordinates,
+            deliverers_position,
+            current_deliverer: 0,
         }
     }
-}
 
-impl FirstYear {
-    pub fn move_and_add(&mut self, movement: Movement) {
-        self.coordinates.move_position(movement);
-        self.counter.add(self.coordinates);
-    }
+    pub fn move_and_add(&mut self, movement: Movement) -> anyhow::Result<()> {
+        self.deliverers_position
+            .get_mut(self.current_deliverer)
+            .unwrap()
+            .move_position(movement);
 
-    pub fn count(&self) -> usize {
-        self.counter.count()
-    }
-}
+        self.counter
+            .add(self.deliverers_position[self.current_deliverer]);
 
-pub struct SecondYear {
-    counter: PresentCounter,
-    coordinates: [Coordinates; 2],
-}
+        self.current_deliverer = (self.current_deliverer + 1) % self.deliverers_position.len();
 
-impl Default for SecondYear {
-    fn default() -> Self {
-        let mut counter = PresentCounter::default();
-        let coordinates = [Coordinates::default(), Coordinates::default()];
-
-        counter.add(coordinates[0]);
-        counter.add(coordinates[1]);
-
-        Self {
-            counter,
-            coordinates,
-        }
-    }
-}
-
-impl SecondYear {
-    pub fn move_and_add(&mut self, movement: Movement, index: usize) {
-        self.coordinates[index].move_position(movement);
-        self.counter.add(self.coordinates[index]);
+        Ok(())
     }
 
     pub fn count(&self) -> usize {
@@ -103,22 +83,13 @@ pub enum Movement {
 
 impl Movement {
     pub fn from_char(c: char) -> anyhow::Result<Movement> {
-        const LEFT: char = '<';
-        const RIGHT: char = '>';
-        const UP: char = '^';
-        const DOWN: char = 'v';
-
         let movement = match c {
-            LEFT => Movement::Left,
-            RIGHT => Movement::Right,
-            UP => Movement::Up,
-            DOWN => Movement::Down,
+            '<' => Movement::Left,
+            '>' => Movement::Right,
+            '^' => Movement::Up,
+            'v' => Movement::Down,
 
-            other => {
-                anyhow::bail!(
-                    "unrecognized character '{other}' (only '{LEFT}', '{RIGHT}', '{UP}' and '{DOWN}' allowed)"
-                );
-            }
+            other => anyhow::bail!("unrecognized character '{other}'"),
         };
 
         Ok(movement)

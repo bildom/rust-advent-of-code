@@ -9,6 +9,7 @@ impl LookAndSay {
 
             let mut prev = None;
             let mut count = 0;
+
             for c in text.chars() {
                 if let Some(prev) = prev {
                     if c != prev {

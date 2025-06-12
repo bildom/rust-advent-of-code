@@ -3,7 +3,7 @@ use std::str::Bytes;
 pub struct StringParser;
 
 impl StringParser {
-    pub fn get_unescaped_string_as_u8(&self, input: &str) -> anyhow::Result<Vec<u8>> {
+    pub fn get_unescaped_string_as_u8(input: &str) -> anyhow::Result<Vec<u8>> {
         let mut buffer = if input.starts_with("\"") && input.ends_with("\"") {
             input[1..input.len() - 1].bytes()
         } else {

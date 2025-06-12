@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_02::helpers::*;
+use crate::year_2015::day_02::helpers::Parser;
 use anyhow::Context;
 
 mod helpers;
@@ -7,9 +7,11 @@ mod helpers;
 puzzle_solver!(
     [2015, 2] = {
         fn solve(&mut self, input: &str) -> anyhow::Result<Answer> {
+            let parser = Parser::default();
+
             let presents = input
                 .lines()
-                .map(Present::new)
+                .map(|line| parser.parse(line))
                 .collect::<anyhow::Result<Vec<_>>>()
                 .with_context(|| "could not create presents")?;
 
@@ -43,11 +45,7 @@ mod tests {
         #[case] expected_area: u32,
         #[case] expected_ribbon_length: u32,
     ) {
-        let answer = Puzzle.solve(input);
-
-        assert!(answer.is_ok());
-
-        let answer = answer.unwrap();
+        let answer = Puzzle.solve(input).unwrap();
 
         assert_eq!(answer.results[0], expected_area.to_string());
         assert_eq!(answer.results[1], expected_ribbon_length.to_string());

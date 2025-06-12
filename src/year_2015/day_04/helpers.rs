@@ -1,9 +1,11 @@
-use md5::digest::core_api::CoreWrapper;
-use md5::{Digest, Md5Core};
+use anyhow::Context;
+use md5::digest::Output;
+use md5::{Digest, Md5};
+use std::io::Write;
 
 #[derive(Default)]
 pub struct Hasher {
-    hasher: CoreWrapper<Md5Core>,
+    hasher: Md5,
 }
 
 impl Hasher {
@@ -16,20 +18,28 @@ impl Hasher {
     where
         F: Fn(&[u8]) -> bool,
     {
-        let mut number = starts_with;
+        let mut result = None;
+        let mut buffer = Vec::new();
+        let mut hash = Output::<Md5>::default();
 
-        loop {
-            self.hasher.update(format!("{text}{number}"));
-            let hash = &self.hasher.finalize_reset()[..];
+        for number in starts_with..=u32::MAX {
+            buffer.clear();
 
-            if hash_checker(hash) {
-                break Ok(number);
+            write!(&mut buffer, "{text}{number}").with_context(|| "could not write hash")?;
+
+            self.hasher.update(&buffer);
+            self.hasher.finalize_into_reset(&mut hash);
+
+            if hash_checker(&hash) {
+                result = Some(number);
+                break;
             }
+        }
 
-            number = match number.checked_add_signed(1) {
-                Some(number) => number,
-                None => anyhow::bail!("number overflow!"),
-            };
+        if let Some(number) = result {
+            Ok(number)
+        } else {
+            anyhow::bail!("could not calculate the suffix for {text}");
         }
     }
 

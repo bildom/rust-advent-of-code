@@ -1,5 +1,6 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_01::helpers::*;
+use crate::year_2015::day_01::helpers::{Direction, Elevator};
+use show_option::ShowOption;
 
 mod helpers;
 
@@ -9,11 +10,12 @@ puzzle_solver!(
             let mut elevator = Elevator::default();
 
             for c in input.chars() {
-                elevator.process(c)?
+                let direction = Direction::from(c)?;
+                elevator.process(direction);
             }
 
             let final_floor = elevator.get_floor();
-            let basement_index = elevator.get_basement_index();
+            let basement_index = elevator.get_basement_index().show_or("none").to_string();
 
             answer!(final_floor, basement_index);
         }
@@ -24,35 +26,32 @@ puzzle_solver!(
 mod tests {
     use super::*;
     use crate::puzzle::Solver;
-    use crate::year_2015::day_01::helpers::BasementIndex;
     use rstest::rstest;
 
     #[rstest]
     // Part 1
-    #[case("(())", 0, BasementIndex::None)]
-    #[case("()()", 0, BasementIndex::None)]
-    #[case("(((", 3, BasementIndex::None)]
-    #[case("(()(()(", 3, BasementIndex::None)]
-    #[case("))(((((", 3, BasementIndex::Some(1))]
-    #[case("())", -1, BasementIndex::Some(3))]
-    #[case("))(", -1, BasementIndex::Some(1))]
-    #[case(")))", -3, BasementIndex::Some(1))]
-    #[case(")())())", -3, BasementIndex::Some(1))]
+    #[case("(())", 0, None)]
+    #[case("()()", 0, None)]
+    #[case("(((", 3, None)]
+    #[case("(()(()(", 3, None)]
+    #[case("))(((((", 3, Some(1))]
+    #[case("())", -1, Some(3))]
+    #[case("))(", -1, Some(1))]
+    #[case(")))", -3, Some(1))]
+    #[case(")())())", -3, Some(1))]
     // Part 2
-    #[case(")", -1, BasementIndex::Some(1))]
-    #[case("()())", -1, BasementIndex::Some(5))]
+    #[case(")", -1, Some(1))]
+    #[case("()())", -1, Some(5))]
     // Other
-    #[case("", 0, BasementIndex::None)]
+    #[case("", 0, None)]
     fn positive_tests(
         #[case] input: &str,
         #[case] expected_final_floor: i32,
-        #[case] expected_basement_index: BasementIndex,
+        #[case] expected_basement_index: Option<usize>,
     ) {
-        let answer = Puzzle.solve(input);
+        let expected_basement_index = expected_basement_index.show_or("none");
 
-        assert!(answer.is_ok());
-
-        let answer = answer.unwrap();
+        let answer = Puzzle.solve(input).unwrap();
 
         assert_eq!(answer.results[0], expected_final_floor.to_string());
         assert_eq!(answer.results[1], expected_basement_index.to_string());
