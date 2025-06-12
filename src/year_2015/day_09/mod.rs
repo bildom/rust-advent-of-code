@@ -28,10 +28,10 @@ puzzle_solver!(
 mod tests {
     use super::*;
     use crate::puzzle::Solver;
+    use indoc::indoc;
     use rstest::rstest;
-    use unindent::unindent;
 
-    const INPUT: &str = {
+    const INPUT: &str = indoc! {
         "London to Dublin = 464
         London to Belfast = 518
         Dublin to Belfast = 141"
@@ -39,7 +39,7 @@ mod tests {
 
     #[rstest]
     #[case("A to B = 10", 10, 10)]
-    #[case(&unindent(INPUT), 605, 982)]
+    #[case(INPUT, 605, 982)]
     fn positive_tests(
         #[case] input: &str,
         #[case] expected_min_distance: u16,

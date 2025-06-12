@@ -15,9 +15,9 @@ impl Default for Parser {
 impl Parser {
     pub fn parse(&self, text: &str) -> anyhow::Result<Present> {
         if let Some(caps) = self.re.captures(text) {
-            let length = caps["length"].parse::<u32>()?;
-            let width = caps["width"].parse::<u32>()?;
-            let height = caps["height"].parse::<u32>()?;
+            let length = caps["length"].parse()?;
+            let width = caps["width"].parse()?;
+            let height = caps["height"].parse()?;
 
             Ok(Present {
                 length,

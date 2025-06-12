@@ -39,42 +39,42 @@ puzzle_solver!(
 mod tests {
     use super::*;
     use crate::puzzle::Solver;
+    use indoc::indoc;
     use rstest::rstest;
-    use unindent::unindent;
 
-    const INPUT_AND: &str = {
+    const INPUT_AND: &str = indoc! {
         "b AND c -> a
         123 -> b
         456 -> c"
     };
 
-    const INPUT_OR: &str = {
+    const INPUT_OR: &str = indoc! {
         "b OR c -> a
         123 -> b
         456 -> c"
     };
 
-    const INPUT_RSHIFT: &str = {
+    const INPUT_RSHIFT: &str = indoc! {
         "b RSHIFT 2 -> a
         123 -> b"
     };
 
-    const INPUT_LSHIFT: &str = {
+    const INPUT_LSHIFT: &str = indoc! {
         "b LSHIFT 2 -> a
         123 -> b"
     };
 
-    const INPUT_NOT: &str = {
+    const INPUT_NOT: &str = indoc! {
         "NOT b -> a
         123 -> b"
     };
 
     #[rstest]
-    #[case(&unindent(INPUT_AND), 72, 72)]
-    #[case(&unindent(INPUT_OR), 507, 507)]
-    #[case(&unindent(INPUT_RSHIFT), 30, 7)]
-    #[case(&unindent(INPUT_LSHIFT), 492, 1968)]
-    #[case(&unindent(INPUT_NOT), 65412, 123)]
+    #[case(INPUT_AND, 72, 72)]
+    #[case(INPUT_OR, 507, 507)]
+    #[case(INPUT_RSHIFT, 30, 7)]
+    #[case(INPUT_LSHIFT, 492, 1968)]
+    #[case(INPUT_NOT, 65412, 123)]
     fn positive_tests(
         #[case] input: &str,
         #[case] expected_first_value_of_wire_a: u16,

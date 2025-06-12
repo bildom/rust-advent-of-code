@@ -110,7 +110,7 @@ impl Parser {
         if let Some(caps) = self.re.captures(input) {
             let location_1 = caps["location1"].to_string();
             let location_2 = caps["location2"].to_string();
-            let distance = caps["distance"].parse::<u16>()?;
+            let distance = caps["distance"].parse()?;
 
             let result = Distance {
                 location_1,

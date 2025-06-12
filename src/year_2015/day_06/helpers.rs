@@ -8,7 +8,7 @@ pub struct Parser {
 
 impl Default for Parser {
     fn default() -> Self {
-        Parser {
+        Self {
             pattern: Regex::new(r"^(?<instruction>turn on|turn off|toggle) (?<from_x>\d+),(?<from_y>\d+) through (?<to_x>\d+),(?<to_y>\d+)$").unwrap()
         }
     }
@@ -21,10 +21,10 @@ impl Parser {
             .captures(line)
             .with_context(|| format!("invalid instruction pattern: {line}"))?;
 
-        let from_x = caps["from_x"].parse::<usize>()?;
-        let from_y = caps["from_y"].parse::<usize>()?;
-        let to_x = caps["to_x"].parse::<usize>()?;
-        let to_y = caps["to_y"].parse::<usize>()?;
+        let from_x = caps["from_x"].parse()?;
+        let from_y = caps["from_y"].parse()?;
+        let to_x = caps["to_x"].parse()?;
+        let to_y = caps["to_y"].parse()?;
 
         let range = Range {
             from_x,
@@ -79,7 +79,7 @@ pub struct LightArray<T> {
 
 impl<T: Default + Clone> Default for LightArray<T> {
     fn default() -> Self {
-        LightArray {
+        Self {
             array: vec![vec![T::default(); 1000]; 1000],
         }
     }

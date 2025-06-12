@@ -38,10 +38,10 @@ puzzle_solver!(
 mod tests {
     use super::*;
     use crate::puzzle::Solver;
+    use indoc::indoc;
     use rstest::rstest;
-    use unindent::unindent;
 
-    const INPUT: &str = {
+    const INPUT: &str = indoc! {
         "Alice would gain 54 happiness units by sitting next to Bob.
         Alice would lose 79 happiness units by sitting next to Carol.
         Alice would lose 2 happiness units by sitting next to David.
@@ -57,7 +57,7 @@ mod tests {
     };
 
     #[rstest]
-    #[case(&unindent(INPUT), 330, 286)]
+    #[case(INPUT, 330, 286)]
     fn positive_tests(
         #[case] input: &str,
         #[case] expected_max_happiness: i32,

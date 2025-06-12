@@ -30,15 +30,15 @@ puzzle_solver!(
 mod tests {
     use super::*;
     use crate::puzzle::Solver;
+    use indoc::indoc;
     use rstest::rstest;
-    use unindent::unindent;
 
-    const INPUT_TURN_ON_AND_OFF: &str = {
+    const INPUT_TURN_ON_AND_OFF: &str = indoc! {
         "turn on 0,0 through 999,999
         turn off 499,499 through 500,500"
     };
 
-    const INPUT_TURN_ON_AND_TOGGLE: &str = {
+    const INPUT_TURN_ON_AND_TOGGLE: &str = indoc! {
         "turn on 0,0 through 999,999
         toggle 499,499 through 500,500"
     };
@@ -46,8 +46,8 @@ mod tests {
     #[rstest]
     #[case("turn on 0,0 through 999,999", 1_000_000, 1_000_000)]
     #[case("toggle 0,0 through 999,0", 1_000, 2_000)]
-    #[case(&unindent(INPUT_TURN_ON_AND_OFF), 999_996, 999_996)]
-    #[case(&unindent(INPUT_TURN_ON_AND_TOGGLE), 999_996, 1_000_008)]
+    #[case(INPUT_TURN_ON_AND_OFF, 999_996, 999_996)]
+    #[case(INPUT_TURN_ON_AND_TOGGLE, 999_996, 1_000_008)]
     fn positive_tests(
         #[case] input: &str,
         #[case] expected_lights_lit: usize,

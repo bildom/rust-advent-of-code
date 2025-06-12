@@ -21,10 +21,10 @@ impl Parser {
         if let Some(caps) = self.re.captures(input) {
             let person = caps["person"].to_string();
             let neighbour = caps["neighbour"].to_string();
-            let amount = caps["amount"].parse::<i32>()?;
+            let amount = caps["amount"].parse()?;
             let instruction = &caps["instruction"];
 
-            let happiness_gain = match instruction {
+            let happiness_gain: i32 = match instruction {
                 "gain" => amount,
                 "lose" => -amount,
                 other => anyhow::bail!("invalid instruction: {other}"),

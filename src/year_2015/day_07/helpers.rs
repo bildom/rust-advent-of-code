@@ -41,7 +41,7 @@ impl Parser {
     }
 
     fn parse_input(input: &str) -> anyhow::Result<Input> {
-        let input = match input.parse::<u16>() {
+        let input = match input.parse() {
             Ok(value) => Input::Value(value),
             Err(_) => Input::Node(NodeId::from(input)?),
         };
