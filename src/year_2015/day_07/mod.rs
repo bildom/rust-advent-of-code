@@ -53,7 +53,7 @@ mod tests {
         123 -> b
         456 -> c"
     };
-    
+
     const INPUT_RSHIFT: &str = {
         "b RSHIFT 2 -> a
         123 -> b"
@@ -68,7 +68,7 @@ mod tests {
         "NOT b -> a
         123 -> b"
     };
-    
+
     #[rstest]
     #[case(&unindent(INPUT_AND), 72, 72)]
     #[case(&unindent(INPUT_OR), 507, 507)]

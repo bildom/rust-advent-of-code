@@ -36,7 +36,7 @@ mod tests {
         London to Belfast = 518
         Dublin to Belfast = 141"
     };
-    
+
     #[rstest]
     #[case("A to B = 10", 10, 10)]
     #[case(&unindent(INPUT), 605, 982)]
