@@ -1,16 +1,6 @@
 use regex::Regex;
 use std::collections::HashMap;
 
-#[derive(Copy, Clone, Hash, Eq, PartialEq)]
-pub struct NodeId(u64);
-
-impl NodeId {
-    pub fn from(name: &str) -> anyhow::Result<Self> {
-        let id = u64::from_str_radix(name, 36)?;
-        Ok(NodeId(id))
-    }
-}
-
 pub struct Parser {
     re_simple: Regex,
     re_gate_one_input: Regex,
@@ -87,6 +77,16 @@ impl Parser {
     }
 }
 
+#[derive(Copy, Clone, Hash, Eq, PartialEq)]
+pub struct NodeId(u64);
+
+impl NodeId {
+    pub fn from(name: &str) -> anyhow::Result<Self> {
+        let id = u64::from_str_radix(name, 36)?;
+        Ok(NodeId(id))
+    }
+}
+
 #[derive(Clone, Copy)]
 pub enum Node {
     Simple(Input),
@@ -118,45 +118,46 @@ impl Circuit {
         self.nodes.insert(id, node);
     }
 
-    pub fn get_node_value(&mut self, id: NodeId) -> Option<u16> {
+    pub fn get_node_value(&mut self, id: NodeId) -> anyhow::Result<u16> {
         if let Some(value) = self.values.get(&id) {
-            return Some(*value);
+            return Ok(*value);
         }
 
-        let node = *self.nodes.get(&id)?;
+        let node = *self
+            .nodes
+            .get(&id)
+            .ok_or_else(|| anyhow::anyhow!("invalid node id"))?;
 
         let value = match node {
-            Node::Simple(input) => self.get_input_value(input),
+            Node::Simple(input) => self.get_input_value(input)?,
 
             Node::AndGate(left, right) => {
-                Some(self.get_input_value(left)? & self.get_input_value(right)?)
+                self.get_input_value(left)? & self.get_input_value(right)?
             }
 
             Node::OrGate(left, right) => {
-                Some(self.get_input_value(left)? | self.get_input_value(right)?)
+                self.get_input_value(left)? | self.get_input_value(right)?
             }
 
-            Node::Negation(signal) => Some(!self.get_input_value(signal)?),
+            Node::Negation(signal) => !self.get_input_value(signal)?,
 
             Node::RightShift(left, right) => {
-                Some(self.get_input_value(left)? >> self.get_input_value(right)?)
+                self.get_input_value(left)? >> self.get_input_value(right)?
             }
 
             Node::LeftShift(left, right) => {
-                Some(self.get_input_value(left)? << self.get_input_value(right)?)
+                self.get_input_value(left)? << self.get_input_value(right)?
             }
         };
 
-        if let Some(value) = value {
-            self.values.insert(id, value);
-        }
+        self.values.insert(id, value);
 
-        value
+        Ok(value)
     }
 
-    fn get_input_value(&mut self, input: Input) -> Option<u16> {
+    fn get_input_value(&mut self, input: Input) -> anyhow::Result<u16> {
         match input {
-            Input::Value(value) => Some(value),
+            Input::Value(value) => Ok(value),
             Input::Node(id) => self.get_node_value(id),
         }
     }

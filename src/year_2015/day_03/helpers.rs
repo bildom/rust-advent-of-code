@@ -7,7 +7,7 @@ pub struct PresentDelivery {
 }
 
 impl PresentDelivery {
-    pub fn new(deliverers_count: usize) -> Self {
+    pub fn with_deliverers(deliverers_count: usize) -> Self {
         let mut counter = PresentCounter::default();
         let deliverers_position = vec![Coordinates::default(); deliverers_count];
 
@@ -82,12 +82,12 @@ pub enum Movement {
 }
 
 impl Movement {
-    pub fn from_char(c: char) -> anyhow::Result<Movement> {
+    pub fn from_char(c: char) -> anyhow::Result<Self> {
         let movement = match c {
-            '<' => Movement::Left,
-            '>' => Movement::Right,
-            '^' => Movement::Up,
-            'v' => Movement::Down,
+            '<' => Self::Left,
+            '>' => Self::Right,
+            '^' => Self::Up,
+            'v' => Self::Down,
 
             other => anyhow::bail!("unrecognized character '{other}'"),
         };

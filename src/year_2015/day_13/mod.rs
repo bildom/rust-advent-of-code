@@ -1,11 +1,12 @@
 use crate::puzzle::{answer, puzzle_solver};
 use crate::year_2015::day_13::helpers::{Parser, SeatingArrangement};
+use show_option::ShowOption;
 
 mod helpers;
 
 puzzle_solver!(
     [2015, 13] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
             let parser = Parser::default();
 
             let mut arrangement = SeatingArrangement::default();
@@ -15,19 +16,11 @@ puzzle_solver!(
                 arrangement.add_relation(&relation);
             }
 
-            arrangement.calculate_happiness()?;
+            let solution = arrangement.calculate_happiness()?;
 
-            let max_happiness = match arrangement.get_max_happiness() {
-                Some(max_happiness) => max_happiness,
-                None => anyhow::bail!("could not solve arrangement for max happiness"),
-            };
-
-            let max_happiness_with_add = match arrangement.get_max_happiness_with_add() {
-                Some(max_happiness_with_add) => max_happiness_with_add,
-                None => anyhow::bail!(
-                    "could not solve arrangement for max happiness with additional (neutral) person"
-                ),
-            };
+            let max_happiness = solution.max_happiness.show_or("none").to_string();
+            let max_happiness_with_add =
+                solution.max_happiness_with_add.show_or("none").to_string();
 
             answer!(max_happiness, max_happiness_with_add);
         }

@@ -5,9 +5,9 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 3] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<Answer> {
-            let mut first_year = PresentDelivery::new(1);
-            let mut second_year = PresentDelivery::new(2);
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
+            let mut first_year = PresentDelivery::with_deliverers(1);
+            let mut second_year = PresentDelivery::with_deliverers(2);
 
             for c in input.chars() {
                 let movement = Movement::from_char(c)?;

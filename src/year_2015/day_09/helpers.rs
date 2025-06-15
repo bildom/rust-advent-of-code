@@ -4,24 +4,53 @@ use regex::Regex;
 use std::cmp::{max, min};
 use std::collections::HashMap;
 
+struct Parser {
+    re: Regex,
+}
+
+impl Default for Parser {
+    fn default() -> Self {
+        Self {
+            re: Regex::new(r"^(?<location1>\w+) to (?<location2>\w+) = (?<distance>\d+)$").unwrap(),
+        }
+    }
+}
+
+impl Parser {
+    fn parse(&self, input: &str) -> anyhow::Result<Distance> {
+        let result = match self.re.captures(input) {
+            Some(caps) => {
+                let location_1 = caps["location1"].to_string();
+                let location_2 = caps["location2"].to_string();
+                let distance = caps["distance"].parse()?;
+
+                Distance {
+                    location_1,
+                    location_2,
+                    value: distance,
+                }
+            }
+            None => anyhow::bail!("invalid input '{input}'"),
+        };
+
+        Ok(result)
+    }
+}
+
+struct Distance {
+    location_1: String,
+    location_2: String,
+    value: u16,
+}
+
 type LocationIdx = usize;
 
 pub struct TravelPlanner {
     locations: Vec<String>,
     distances: HashMap<(LocationIdx, LocationIdx), u16>,
-    min_dist: Option<u16>,
-    max_dist: Option<u16>,
 }
 
 impl TravelPlanner {
-    pub fn get_min_dist(&self) -> Option<u16> {
-        self.min_dist
-    }
-
-    pub fn get_max_dist(&self) -> Option<u16> {
-        self.max_dist
-    }
-
     pub fn build_from(input: &str) -> anyhow::Result<Self> {
         let mut locations = Vec::new();
         let mut distances = HashMap::new();
@@ -41,24 +70,27 @@ impl TravelPlanner {
                 .or_insert(distance.value);
         }
 
-        Ok(Self {
+        let result = Self {
             locations,
             distances,
-            min_dist: None,
-            max_dist: None,
-        })
+        };
+
+        Ok(result)
     }
 
     fn substitute_name_with_index(location: &str, dictionary: &mut Vec<String>) -> LocationIdx {
-        if let Some(idx) = dictionary.iter().position(|n| n == location) {
-            idx
-        } else {
-            dictionary.push(location.to_string());
-            dictionary.len() - 1
+        match dictionary.iter().position(|n| n == location) {
+            Some(idx) => idx,
+            None => {
+                dictionary.push(location.to_string());
+                dictionary.len() - 1
+            }
         }
     }
 
-    pub fn calculate_distances(&mut self) -> anyhow::Result<()> {
+    pub fn calculate_distances(&mut self) -> anyhow::Result<Solution> {
+        let mut solution = Solution::default();
+
         for permutation in (0..self.locations.len()).permutations(self.locations.len()) {
             let mut sum_distance = 0;
 
@@ -72,55 +104,32 @@ impl TravelPlanner {
                     .ok_or_else(|| anyhow!("could not find route: {from} to: {to}"))?;
             }
 
-            self.min_dist = match self.min_dist {
-                Some(min_dist) => Some(min(min_dist, sum_distance)),
-                None => Some(sum_distance),
-            };
-
-            self.max_dist = match self.max_dist {
-                Some(max_dist) => Some(max(max_dist, sum_distance)),
-                None => Some(sum_distance),
-            };
+            solution.solve_min_distance(sum_distance);
+            solution.solve_max_distance(sum_distance);
         }
 
-        Ok(())
+        Ok(solution)
     }
 }
 
-struct Distance {
-    location_1: String,
-    location_2: String,
-    value: u16,
+#[derive(Default)]
+pub struct Solution {
+    pub min_dist: Option<u16>,
+    pub max_dist: Option<u16>,
 }
 
-struct Parser {
-    re: Regex,
-}
-
-impl Default for Parser {
-    fn default() -> Self {
-        Self {
-            re: Regex::new(r"^(?<location1>\S+) to (?<location2>\S+) = (?<distance>\d+)$").unwrap(),
-        }
+impl Solution {
+    fn solve_min_distance(&mut self, distance: u16) {
+        self.min_dist = match self.min_dist {
+            Some(min_dist) => Some(min(min_dist, distance)),
+            None => Some(distance),
+        };
     }
-}
 
-impl Parser {
-    fn parse(&self, input: &str) -> anyhow::Result<Distance> {
-        if let Some(caps) = self.re.captures(input) {
-            let location_1 = caps["location1"].to_string();
-            let location_2 = caps["location2"].to_string();
-            let distance = caps["distance"].parse()?;
-
-            let result = Distance {
-                location_1,
-                location_2,
-                value: distance,
-            };
-
-            Ok(result)
-        } else {
-            anyhow::bail!("invalid input {input}");
-        }
+    fn solve_max_distance(&mut self, distance: u16) {
+        self.max_dist = match self.max_dist {
+            Some(max_dist) => Some(max(max_dist, distance)),
+            None => Some(distance),
+        };
     }
 }

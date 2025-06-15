@@ -7,7 +7,7 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 5] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
             let mut first_year = 0u32;
             let mut second_year = 0u32;
 

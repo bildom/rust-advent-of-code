@@ -5,7 +5,7 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 6] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
             let parser = Parser::default();
 
             let mut light_array = LightArray::<bool>::default();

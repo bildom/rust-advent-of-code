@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 
 pub trait Solver {
-    fn solve(&mut self, input: &str) -> anyhow::Result<Answer>;
+    fn solve(&self, input: &str) -> anyhow::Result<Answer>;
 }
 
 pub struct Answer {

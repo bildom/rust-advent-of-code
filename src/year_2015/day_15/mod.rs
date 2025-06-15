@@ -1,11 +1,12 @@
 use crate::puzzle::{answer, puzzle_solver};
 use crate::year_2015::day_15::helpers::{Parser, RecipeCalculator};
+use show_option::ShowOption;
 
 mod helpers;
 
 puzzle_solver!(
     [2015, 15] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
             let parser = Parser::default();
             let mut calculator = RecipeCalculator::default();
 
@@ -14,17 +15,10 @@ puzzle_solver!(
                 calculator.add_ingredient(ingredient);
             }
 
-            calculator.solve_recipe(100);
+            let solution = calculator.solve_recipe(100)?;
 
-            let best_score = match calculator.get_best_score() {
-                Some(score) => score,
-                None => anyhow::bail!("could not calculate best score"),
-            };
-
-            let best_score_500_cal = match calculator.get_best_score_500_cal() {
-                Some(score) => score,
-                None => anyhow::bail!("could not calculate best score"),
-            };
+            let best_score = solution.best_score.show_or("none").to_string();
+            let best_score_500_cal = solution.best_score_500_cal.show_or("none").to_string();
 
             answer!(best_score, best_score_500_cal);
         }

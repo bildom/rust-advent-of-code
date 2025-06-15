@@ -1,23 +1,18 @@
 use crate::puzzle::{answer, puzzle_solver};
 use crate::year_2015::day_09::helpers::TravelPlanner;
-use anyhow::anyhow;
+use show_option::ShowOption;
 
 mod helpers;
 
 puzzle_solver!(
     [2015, 9] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
             let mut planner = TravelPlanner::build_from(input)?;
 
-            planner.calculate_distances()?;
+            let solution = planner.calculate_distances()?;
 
-            let min_distance = planner
-                .get_min_dist()
-                .ok_or_else(|| anyhow!("no minimal distance was calculated"))?;
-
-            let max_distance = planner
-                .get_max_dist()
-                .ok_or_else(|| anyhow!("no maximal distance was calculated"))?;
+            let min_distance = solution.min_dist.show_or("none").to_string();
+            let max_distance = solution.max_dist.show_or("none").to_string();
 
             answer!(min_distance, max_distance);
         }

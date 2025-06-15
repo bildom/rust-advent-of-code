@@ -8,26 +8,29 @@ pub struct Parser {
 impl Default for Parser {
     fn default() -> Self {
         Self {
-            re: Regex::new(r"^\S+ can fly (?<speed>\d+) km/s for (?<fly_time>\d+) seconds, but then must rest for (?<rest_time>\d+) seconds.$").unwrap(),
+            re: Regex::new(r"^\w+ can fly (?<speed>\d+) km/s for (?<fly_time>\d+) seconds, but then must rest for (?<rest_time>\d+) seconds.$").unwrap(),
         }
     }
 }
 
 impl Parser {
     pub fn parse(&self, input: &str) -> anyhow::Result<Reindeer> {
-        if let Some(caps) = self.re.captures(input) {
-            let speed = caps["speed"].parse()?;
-            let fly_time = caps["fly_time"].parse()?;
-            let rest_time = caps["rest_time"].parse()?;
+        let result = match self.re.captures(input) {
+            Some(caps) => {
+                let speed = caps["speed"].parse()?;
+                let fly_time = caps["fly_time"].parse()?;
+                let rest_time = caps["rest_time"].parse()?;
 
-            Ok(Reindeer {
-                speed,
-                fly_time,
-                rest_time,
-            })
-        } else {
-            anyhow::bail!("could not parse reindeer data");
-        }
+                Reindeer {
+                    speed,
+                    fly_time,
+                    rest_time,
+                }
+            }
+            None => anyhow::bail!("could not parse reindeer data"),
+        };
+
+        Ok(result)
     }
 }
 
@@ -46,24 +49,14 @@ impl Reindeer {
 #[derive(Default)]
 pub struct Race {
     reindeer: Vec<Reindeer>,
-    max_distance: Option<u32>,
-    winning_points: Option<u32>,
 }
 
 impl Race {
-    pub fn get_max_distance(&self) -> Option<u32> {
-        self.max_distance
-    }
-
-    pub fn get_winning_points(&self) -> Option<u32> {
-        self.winning_points
-    }
-
     pub fn add_reindeer(&mut self, data: Reindeer) {
         self.reindeer.push(data);
     }
 
-    pub fn run(&mut self, time: u32) {
+    pub fn run(&mut self, time: u32) -> anyhow::Result<RunResult> {
         let mut distances = vec![0u32; self.reindeer.len()];
         let mut points = vec![0u32; self.reindeer.len()];
 
@@ -90,7 +83,19 @@ impl Race {
             }
         }
 
-        self.max_distance = distances.iter().max().copied();
-        self.winning_points = points.iter().max().copied();
+        let winning_distance = distances.iter().max().cloned();
+        let winning_points = points.iter().max().cloned();
+
+        let result = RunResult {
+            winning_distance,
+            winning_points,
+        };
+
+        Ok(result)
     }
+}
+
+pub struct RunResult {
+    pub winning_distance: Option<u32>,
+    pub winning_points: Option<u32>,
 }

@@ -36,10 +36,9 @@ impl Hasher {
             }
         }
 
-        if let Some(number) = result {
-            Ok(number)
-        } else {
-            anyhow::bail!("could not calculate the suffix for {text}");
+        match result {
+            Some(number) => Ok(number),
+            None => anyhow::bail!("could not calculate the suffix for {text}"),
         }
     }
 

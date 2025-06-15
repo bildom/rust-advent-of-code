@@ -6,7 +6,7 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 1] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
             let mut elevator = Elevator::default();
 
             for c in input.chars() {

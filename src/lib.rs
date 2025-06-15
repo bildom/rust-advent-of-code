@@ -7,21 +7,19 @@ mod puzzle;
 mod year_2015;
 
 pub fn process(args: Args) -> anyhow::Result<Answer> {
+    let year = args.year;
+    let day = args.day;
+
     let input = args.input.extract()?;
 
-    let solver = match args.year {
-        2015 => year_2015::select_solver(args.day),
+    let solver = match year {
+        2015 => year_2015::select_solver(day),
         _ => None,
     };
 
-    let answer = if let Some(mut solver) = solver {
-        solver.solve(&input)?
-    } else {
-        anyhow::bail!(
-            "no solver found for: year {year}, day {day}",
-            year = args.year,
-            day = args.day
-        );
+    let answer = match solver {
+        Some(solver) => solver.solve(&input)?,
+        None => anyhow::bail!("no solver found for: year {year}, day {day}"),
     };
 
     Ok(answer)

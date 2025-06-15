@@ -1,11 +1,12 @@
 use crate::puzzle::{answer, puzzle_solver};
 use crate::year_2015::day_14::helpers::{Parser, Race};
+use show_option::ShowOption;
 
 mod helpers;
 
 puzzle_solver!(
     [2015, 14] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
             let parser = Parser::default();
             let mut race = Race::default();
 
@@ -14,21 +15,12 @@ puzzle_solver!(
                 race.add_reindeer(reindeer);
             }
 
-            race.run(2503);
+            let run_result = race.run(2503)?;
 
-            let max_distance = if let Some(distance) = race.get_max_distance() {
-                distance
-            } else {
-                anyhow::bail!("could not calculate winning distance");
-            };
+            let winning_distance = run_result.winning_distance.show_or("none").to_string();
+            let winning_points = run_result.winning_points.show_or("none").to_string();
 
-            let winning_points = if let Some(points) = race.get_winning_points() {
-                points
-            } else {
-                anyhow::bail!("could not calculate winning points");
-            };
-
-            answer!(max_distance, winning_points);
+            answer!(winning_distance, winning_points);
         }
     }
 );

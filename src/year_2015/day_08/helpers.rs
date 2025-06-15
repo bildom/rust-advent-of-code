@@ -25,10 +25,9 @@ impl StringParser {
                 _ => None,
             };
 
-            if let Some(byte) = byte {
-                parsed.push(byte);
-            } else {
-                anyhow::bail!("invalid escape sequence in {input}");
+            match byte {
+                Some(byte) => parsed.push(byte),
+                None => anyhow::bail!("invalid escape sequence in {input}"),
             }
         }
 

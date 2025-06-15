@@ -5,7 +5,7 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 8] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
             let mut raw_length = 0;
             let mut parsed_length = 0;
             let mut encoded_length = 0;

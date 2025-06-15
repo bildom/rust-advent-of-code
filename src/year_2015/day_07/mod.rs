@@ -5,7 +5,7 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 7] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
             let parser = Parser::default();
             let mut circuit = Circuit::default();
 
@@ -16,19 +16,13 @@ puzzle_solver!(
 
             let a_id = NodeId::from("a")?;
 
-            let first_value_of_wire_a = match circuit.get_node_value(a_id) {
-                Some(value) => value,
-                None => anyhow::bail!("could not calculate wire 'a' value on the first pass"),
-            };
+            let first_value_of_wire_a = circuit.get_node_value(a_id)?;
 
             let b_id = NodeId::from("b")?;
             circuit.clear();
             circuit.set(b_id, Node::Simple(Input::Value(first_value_of_wire_a)));
 
-            let second_value_of_wire_a = match circuit.get_node_value(a_id) {
-                Some(value) => value,
-                None => anyhow::bail!("could not calculate wire 'a' value on the second pass"),
-            };
+            let second_value_of_wire_a = circuit.get_node_value(a_id)?;
 
             answer!(first_value_of_wire_a, second_value_of_wire_a);
         }

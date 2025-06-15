@@ -5,7 +5,7 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 4] = {
-        fn solve(&mut self, input: &str) -> anyhow::Result<Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
             let mut hasher = Hasher::default();
 
             let for_5_zeros = hasher.calculate_suffix(input, 0, Hasher::starts_with_5_zeros)?;
