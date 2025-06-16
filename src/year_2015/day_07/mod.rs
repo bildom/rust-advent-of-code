@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use helpers::{Circuit, Input, Node, NodeId, Parser};
+use helpers::{Circuit, Input, Node, Parser};
 
 mod helpers;
 
@@ -10,19 +10,15 @@ puzzle_solver!(
             let mut circuit = Circuit::default();
 
             for line in input.lines() {
-                let (id, node) = parser.parse(line)?;
-                circuit.set(id, node);
+                let (name, node) = parser.parse(line)?;
+                circuit.set(&name, node);
             }
 
-            let a_id = NodeId::from("a")?;
+            let first_value_of_wire_a = circuit.get_node_value("a")?;
 
-            let first_value_of_wire_a = circuit.get_node_value(a_id)?;
+            circuit.set("b", Node::Simple(Input::Value(first_value_of_wire_a)));
 
-            let b_id = NodeId::from("b")?;
-            circuit.clear();
-            circuit.set(b_id, Node::Simple(Input::Value(first_value_of_wire_a)));
-
-            let second_value_of_wire_a = circuit.get_node_value(a_id)?;
+            let second_value_of_wire_a = circuit.get_node_value("a")?;
 
             answer!(first_value_of_wire_a, second_value_of_wire_a);
         }

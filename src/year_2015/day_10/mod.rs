@@ -5,7 +5,7 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 10] = {
-        fn solve(&self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
             let after_40 = LookAndSay::run(input, 40);
             let after_50 = LookAndSay::run(&after_40, 10);
 

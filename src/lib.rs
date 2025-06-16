@@ -2,6 +2,7 @@ pub use crate::config::{Args, InputArgs};
 use crate::puzzle::Answer;
 
 mod config;
+mod dictionary;
 mod puzzle;
 
 mod year_2015;

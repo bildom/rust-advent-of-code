@@ -7,7 +7,7 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 17] = {
-        fn solve(&self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
             let mut containers = Containers::default();
 
             for line in input.lines() {

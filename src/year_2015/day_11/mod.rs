@@ -5,7 +5,7 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 11] = {
-        fn solve(&self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
             let next_password = PasswordGenerator::find_next_valid_password(input)?;
             let another_password = PasswordGenerator::find_next_valid_password(&next_password)?;
 

@@ -6,7 +6,7 @@ mod helpers;
 
 puzzle_solver!(
     [2015, 15] = {
-        fn solve(&self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
             let parser = Parser::default();
             let mut calculator = RecipeCalculator::default();
 

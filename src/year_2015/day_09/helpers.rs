@@ -1,10 +1,11 @@
+use crate::dictionary::{Dictionary, DictionaryIdx};
 use anyhow::anyhow;
 use itertools::Itertools;
 use regex::Regex;
 use std::cmp::{max, min};
 use std::collections::HashMap;
 
-struct Parser {
+pub struct Parser {
     re: Regex,
 }
 
@@ -17,7 +18,7 @@ impl Default for Parser {
 }
 
 impl Parser {
-    fn parse(&self, input: &str) -> anyhow::Result<Distance> {
+    pub fn parse(&self, input: &str) -> anyhow::Result<Distance> {
         let result = match self.re.captures(input) {
             Some(caps) => {
                 let location_1 = caps["location1"].to_string();
@@ -37,55 +38,32 @@ impl Parser {
     }
 }
 
-struct Distance {
+pub struct Distance {
     location_1: String,
     location_2: String,
     value: u16,
 }
 
-type LocationIdx = usize;
+type LocationIdx = DictionaryIdx;
 
+#[derive(Default)]
 pub struct TravelPlanner {
-    locations: Vec<String>,
+    locations: Dictionary,
     distances: HashMap<(LocationIdx, LocationIdx), u16>,
 }
 
 impl TravelPlanner {
-    pub fn build_from(input: &str) -> anyhow::Result<Self> {
-        let mut locations = Vec::new();
-        let mut distances = HashMap::new();
+    pub fn add(&mut self, distance: Distance) {
+        let loc_idx_1 = self.locations.put(&distance.location_1);
+        let loc_idx_2 = self.locations.put(&distance.location_2);
 
-        let parser = Parser::default();
+        self.distances
+            .entry((loc_idx_1, loc_idx_2))
+            .or_insert(distance.value);
 
-        for line in input.lines() {
-            let distance = parser.parse(line)?;
-            let loc_idx_1 = Self::substitute_name_with_index(&distance.location_1, &mut locations);
-            let loc_idx_2 = Self::substitute_name_with_index(&distance.location_2, &mut locations);
-
-            distances
-                .entry((loc_idx_1, loc_idx_2))
-                .or_insert(distance.value);
-            distances
-                .entry((loc_idx_2, loc_idx_1))
-                .or_insert(distance.value);
-        }
-
-        let result = Self {
-            locations,
-            distances,
-        };
-
-        Ok(result)
-    }
-
-    fn substitute_name_with_index(location: &str, dictionary: &mut Vec<String>) -> LocationIdx {
-        match dictionary.iter().position(|n| n == location) {
-            Some(idx) => idx,
-            None => {
-                dictionary.push(location.to_string());
-                dictionary.len() - 1
-            }
-        }
+        self.distances
+            .entry((loc_idx_2, loc_idx_1))
+            .or_insert(distance.value);
     }
 
     pub fn calculate_distances(&mut self) -> anyhow::Result<Solution> {
@@ -98,10 +76,13 @@ impl TravelPlanner {
                 let from = pair[0];
                 let to = pair[1];
 
-                sum_distance += self
-                    .distances
-                    .get(&(from, to))
-                    .ok_or_else(|| anyhow!("could not find route: {from} to: {to}"))?;
+                sum_distance += self.distances.get(&(from, to)).ok_or_else(|| {
+                    anyhow!(
+                        "could not find route from {loc_1} to {loc_2}",
+                        loc_1 = self.locations.map_to_name(from),
+                        loc_2 = self.locations.map_to_name(to)
+                    )
+                })?;
             }
 
             solution.solve_min_distance(sum_distance);

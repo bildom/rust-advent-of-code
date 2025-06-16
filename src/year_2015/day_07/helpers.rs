@@ -1,3 +1,4 @@
+use crate::dictionary::{Dictionary, DictionaryIdx};
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -18,7 +19,7 @@ impl Default for Parser {
 }
 
 impl Parser {
-    pub fn parse(&self, input: &str) -> anyhow::Result<(NodeId, Node)> {
+    pub fn parse(&self, input: &str) -> anyhow::Result<(String, Node)> {
         if let Some(caps) = self.re_simple.captures(input) {
             Self::parse_simple_node(&caps)
         } else if let Some(caps) = self.re_gate_one_input.captures(input) {
@@ -33,43 +34,43 @@ impl Parser {
     fn parse_input(input: &str) -> anyhow::Result<Input> {
         let input = match input.parse() {
             Ok(value) => Input::Value(value),
-            Err(_) => Input::Node(NodeId::from(input)?),
+            Err(_) => Input::Node(String::from(input)),
         };
 
         Ok(input)
     }
 
-    fn parse_simple_node(caps: &regex::Captures<'_>) -> anyhow::Result<(NodeId, Node)> {
-        let id = NodeId::from(&caps["name"])?;
+    fn parse_simple_node(caps: &regex::Captures) -> anyhow::Result<(String, Node)> {
+        let name = caps["name"].to_string();
         let input = Self::parse_input(&caps["input"])?;
 
-        Ok((id, Node::Simple(input)))
+        Ok((name, Node::Simple(input)))
     }
 
-    fn parse_gate_one_input(caps: &regex::Captures<'_>) -> anyhow::Result<(NodeId, Node)> {
-        let id = NodeId::from(&caps["name"])?;
+    fn parse_gate_one_input(caps: &regex::Captures) -> anyhow::Result<(String, Node)> {
+        let name = caps["name"].to_string();
         let instruction = &caps["instruction"];
         let input = Self::parse_input(&caps["input"])?;
 
         let result = match instruction {
-            "NOT" => (id, Node::Negation(input)),
+            "NOT" => (name, Node::Negation(input)),
             other => anyhow::bail!("invalid instruction: {other}"),
         };
 
         Ok(result)
     }
 
-    fn parse_gate_double_input(caps: &regex::Captures<'_>) -> anyhow::Result<(NodeId, Node)> {
-        let id = NodeId::from(&caps["name"])?;
+    fn parse_gate_double_input(caps: &regex::Captures) -> anyhow::Result<(String, Node)> {
+        let name = caps["name"].to_string();
         let instruction = &caps["instruction"];
         let left = Self::parse_input(&caps["left"])?;
         let right = Self::parse_input(&caps["right"])?;
 
         let result = match instruction {
-            "AND" => (id, Node::AndGate(left, right)),
-            "OR" => (id, Node::OrGate(left, right)),
-            "RSHIFT" => (id, Node::RightShift(left, right)),
-            "LSHIFT" => (id, Node::LeftShift(left, right)),
+            "AND" => (name, Node::AndGate(left, right)),
+            "OR" => (name, Node::OrGate(left, right)),
+            "RSHIFT" => (name, Node::RightShift(left, right)),
+            "LSHIFT" => (name, Node::LeftShift(left, right)),
             other => anyhow::bail!("invalid instruction: {other}"),
         };
 
@@ -77,17 +78,6 @@ impl Parser {
     }
 }
 
-#[derive(Copy, Clone, Hash, Eq, PartialEq)]
-pub struct NodeId(u64);
-
-impl NodeId {
-    pub fn from(name: &str) -> anyhow::Result<Self> {
-        let id = u64::from_str_radix(name, 36)?;
-        Ok(NodeId(id))
-    }
-}
-
-#[derive(Clone, Copy)]
 pub enum Node {
     Simple(Input),
     AndGate(Input, Input),
@@ -97,68 +87,80 @@ pub enum Node {
     LeftShift(Input, Input),
 }
 
-#[derive(Clone, Copy)]
 pub enum Input {
     Value(u16),
-    Node(NodeId),
+    Node(String),
 }
+
+type NodeIdx = DictionaryIdx;
+type NodeCache = HashMap<NodeIdx, u16>;
 
 #[derive(Default)]
 pub struct Circuit {
-    values: HashMap<NodeId, u16>,
-    nodes: HashMap<NodeId, Node>,
+    node_dict: Dictionary,
+    nodes: HashMap<NodeIdx, Node>,
 }
 
 impl Circuit {
-    pub fn clear(&mut self) {
-        self.values.clear();
+    pub fn set(&mut self, name: &str, node: Node) {
+        let idx = self.node_dict.put(name);
+        self.nodes.insert(idx, node);
     }
 
-    pub fn set(&mut self, id: NodeId, node: Node) {
-        self.nodes.insert(id, node);
+    fn get_node_index(&self, name: &str) -> anyhow::Result<NodeIdx> {
+        self.node_dict
+            .map_to_idx(name)
+            .ok_or_else(|| anyhow::anyhow!("invalid node name: {name}"))
     }
 
-    pub fn get_node_value(&mut self, id: NodeId) -> anyhow::Result<u16> {
-        if let Some(value) = self.values.get(&id) {
+    pub fn get_node_value(&self, name: &str) -> anyhow::Result<u16> {
+        let mut cache = NodeCache::new();
+        self.solve_node_value(&mut cache, name)
+    }
+
+    pub fn solve_node_value(&self, cache: &mut NodeCache, name: &str) -> anyhow::Result<u16> {
+        let idx = self.get_node_index(name)?;
+
+        if let Some(value) = cache.get(&idx) {
             return Ok(*value);
         }
 
-        let node = *self
+        let node = self
             .nodes
-            .get(&id)
-            .ok_or_else(|| anyhow::anyhow!("invalid node id"))?;
+            .get(&idx)
+            .ok_or_else(|| anyhow::anyhow!("invalid circuit definition (no '{name}')"))?;
 
         let value = match node {
-            Node::Simple(input) => self.get_input_value(input)?,
+            Node::Simple(input) => self.solve_input_value(cache, input)?,
 
             Node::AndGate(left, right) => {
-                self.get_input_value(left)? & self.get_input_value(right)?
+                self.solve_input_value(cache, left)? & self.solve_input_value(cache, right)?
             }
 
             Node::OrGate(left, right) => {
-                self.get_input_value(left)? | self.get_input_value(right)?
+                self.solve_input_value(cache, left)? | self.solve_input_value(cache, right)?
             }
 
-            Node::Negation(signal) => !self.get_input_value(signal)?,
+            Node::Negation(signal) => !self.solve_input_value(cache, signal)?,
 
             Node::RightShift(left, right) => {
-                self.get_input_value(left)? >> self.get_input_value(right)?
+                self.solve_input_value(cache, left)? >> self.solve_input_value(cache, right)?
             }
 
             Node::LeftShift(left, right) => {
-                self.get_input_value(left)? << self.get_input_value(right)?
+                self.solve_input_value(cache, left)? << self.solve_input_value(cache, right)?
             }
         };
 
-        self.values.insert(id, value);
+        cache.insert(idx, value);
 
         Ok(value)
     }
 
-    fn get_input_value(&mut self, input: Input) -> anyhow::Result<u16> {
+    fn solve_input_value(&self, cache: &mut NodeCache, input: &Input) -> anyhow::Result<u16> {
         match input {
-            Input::Value(value) => Ok(value),
-            Input::Node(id) => self.get_node_value(id),
+            Input::Value(value) => Ok(*value),
+            Input::Node(name) => self.solve_node_value(cache, name),
         }
     }
 }

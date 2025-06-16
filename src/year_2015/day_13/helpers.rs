@@ -1,10 +1,9 @@
+use crate::dictionary::{Dictionary, DictionaryIdx};
 use anyhow::anyhow;
 use itertools::Itertools;
 use regex::Regex;
 use std::cmp::max;
 use std::collections::HashMap;
-
-type PersonIdx = usize;
 
 pub struct Parser {
     re: Regex,
@@ -50,32 +49,24 @@ pub struct Relation {
     happiness_gain: i32,
 }
 
-#[derive(Default, Debug)]
+type PersonIdx = DictionaryIdx;
+
+#[derive(Default)]
 pub struct SeatingArrangement {
-    people: Vec<String>,
+    people: Dictionary,
     relations: HashMap<(PersonIdx, PersonIdx), i32>,
 }
 
 impl SeatingArrangement {
     pub fn add_relation(&mut self, relation: &Relation) {
-        let person_idx = self.substitute_name_with_index(&relation.person);
-        let neighbour_idx = self.substitute_name_with_index(&relation.neighbour);
+        let person_idx = self.people.put(&relation.person);
+        let neighbour_idx = self.people.put(&relation.neighbour);
 
         let pair = (person_idx, neighbour_idx);
 
         self.relations
             .entry(pair)
             .or_insert(relation.happiness_gain);
-    }
-
-    fn substitute_name_with_index(&mut self, name: &str) -> PersonIdx {
-        match self.people.iter().position(|p| p == name) {
-            Some(idx) => idx,
-            None => {
-                self.people.push(name.to_string());
-                self.people.len() - 1
-            }
-        }
     }
 
     pub fn calculate_happiness(&mut self) -> anyhow::Result<Solution> {

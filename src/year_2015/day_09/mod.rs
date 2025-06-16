@@ -1,13 +1,19 @@
 use crate::puzzle::{answer, puzzle_solver};
-use helpers::TravelPlanner;
+use helpers::{Parser, TravelPlanner};
 use show_option::ShowOption;
 
 mod helpers;
 
 puzzle_solver!(
     [2015, 9] = {
-        fn solve(&self, input: &str) -> anyhow::Result<crate::puzzle::Answer> {
-            let mut planner = TravelPlanner::build_from(input)?;
+        fn solve(&self, input: &str) -> anyhow::Result<Answer> {
+            let parser = Parser::default();
+            let mut planner = TravelPlanner::default();
+
+            for line in input.lines() {
+                let distance = parser.parse(line)?;
+                planner.add(distance);
+            }
 
             let solution = planner.calculate_distances()?;
 
