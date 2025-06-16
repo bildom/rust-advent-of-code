@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_03::helpers::{Movement, PresentDelivery};
+use helpers::{Movement, PresentDelivery};
 
 mod helpers;
 

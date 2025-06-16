@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_08::helpers::StringParser;
+use helpers::StringParser;
 
 mod helpers;
 

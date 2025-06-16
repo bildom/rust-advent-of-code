@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_04::helpers::Hasher;
+use helpers::Hasher;
 
 mod helpers;
 

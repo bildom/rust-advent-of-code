@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_06::helpers::{LightArray, Parser};
+use helpers::{LightArray, Parser};
 
 mod helpers;
 

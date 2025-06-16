@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_10::helpers::LookAndSay;
+use helpers::LookAndSay;
 
 mod helpers;
 

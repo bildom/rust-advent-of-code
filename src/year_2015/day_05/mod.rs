@@ -1,7 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_05::helpers::{
-    FirstYearCriteria, NiceStringValidator, SecondYearCriteria,
-};
+use helpers::{FirstYearCriteria, NiceStringValidator, SecondYearCriteria};
 
 mod helpers;
 

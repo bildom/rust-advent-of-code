@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_01::helpers::{Direction, Elevator};
+use helpers::{Direction, Elevator};
 use show_option::ShowOption;
 
 mod helpers;

@@ -1,6 +1,6 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_02::helpers::Parser;
 use anyhow::Context;
+use helpers::Parser;
 
 mod helpers;
 

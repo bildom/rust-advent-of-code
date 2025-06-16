@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_07::helpers::{Circuit, Input, Node, NodeId, Parser};
+use helpers::{Circuit, Input, Node, NodeId, Parser};
 
 mod helpers;
 

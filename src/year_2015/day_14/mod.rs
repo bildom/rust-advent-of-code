@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_14::helpers::{Parser, Race};
+use helpers::{Parser, Race};
 use show_option::ShowOption;
 
 mod helpers;

@@ -1,5 +1,5 @@
 use crate::puzzle::{answer, puzzle_solver};
-use crate::year_2015::day_09::helpers::TravelPlanner;
+use helpers::TravelPlanner;
 use show_option::ShowOption;
 
 mod helpers;
