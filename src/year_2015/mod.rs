@@ -17,6 +17,7 @@ mod day_14;
 mod day_15;
 mod day_16;
 mod day_17;
+mod day_18;
 
 puzzle_solver_selector!(
     1 = day_01::Puzzle,
@@ -36,4 +37,5 @@ puzzle_solver_selector!(
     15 = day_15::Puzzle,
     16 = day_16::Puzzle,
     17 = day_17::Puzzle,
+    18 = day_18::Puzzle,
 );
