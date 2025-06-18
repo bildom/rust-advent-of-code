@@ -43,28 +43,32 @@ impl LightArray {
         }
     }
 
-    pub fn animate(&mut self, count: usize) {
-        let mut neighbours = vec![vec![0; self.height]; self.width];
+    pub fn animate(&mut self, steps: usize) {
+        for _ in 0..steps {
+            self.prepare();
 
-        for _ in 0..count {
-            for (x, row) in neighbours.iter_mut().enumerate() {
-                for (y, neighbours_count) in row.iter_mut().enumerate() {
-                    *neighbours_count = self.count_neighbours(x, y);
+            for col in self.array.iter_mut() {
+                for state in col.iter_mut() {
+                    *state = state.transition();
                 }
             }
+        }
+    }
 
-            for (x, row) in self.array.iter_mut().enumerate() {
-                for (y, light) in row.iter_mut().enumerate() {
-                    if self.lights_stuck_on.contains(&(x, y)) {
-                        continue;
-                    }
+    fn prepare(&mut self) {
+        for x in 0..self.width {
+            for y in 0..self.height {
+                if self.lights_stuck_on.contains(&(x, y)) {
+                    continue;
+                }
 
-                    if *light == LightState::On && !(neighbours[x][y] == 2 || neighbours[x][y] == 3)
-                    {
-                        *light = LightState::Off;
-                    } else if *light == LightState::Off && neighbours[x][y] == 3 {
-                        *light = LightState::On;
-                    }
+                let count = self.count_neighbours(x, y);
+                let state = &mut self.array[x][y];
+
+                *state = match *state {
+                    LightState::On if !(2..=3).contains(&count) => LightState::TurningOff,
+                    LightState::Off if count == 3 => LightState::TurningOn,
+                    other => other,
                 }
             }
         }
@@ -73,11 +77,15 @@ impl LightArray {
     fn count_neighbours(&self, center_x: usize, center_y: usize) -> usize {
         let mut count = 0;
 
-        for x in center_x.saturating_sub(1)..=min(self.width - 1, center_x + 1) {
-            for y in center_y.saturating_sub(1)..=min(self.height - 1, center_y + 1) {
-                if x == center_x && y == center_y {
-                    continue;
-                } else if self.array[x][y] == LightState::On {
+        let x_min = center_x.saturating_sub(1);
+        let x_max = min(self.width - 1, center_x + 1);
+
+        let y_min = center_y.saturating_sub(1);
+        let y_max = min(self.height - 1, center_y + 1);
+
+        for x in x_min..=x_max {
+            for y in y_min..=y_max {
+                if (x != center_x || y != center_y) && self.array[x][y].is_on() {
                     count += 1;
                 }
             }
@@ -89,7 +97,7 @@ impl LightArray {
     pub fn count_lit(&self) -> usize {
         self.array
             .iter()
-            .map(|row| row.iter().filter(|light| **light == LightState::On).count())
+            .map(|col| col.iter().filter(|light| **light == LightState::On).count())
             .sum()
     }
 }
@@ -98,4 +106,20 @@ impl LightArray {
 pub enum LightState {
     On,
     Off,
+    TurningOff,
+    TurningOn,
+}
+
+impl LightState {
+    fn is_on(&self) -> bool {
+        matches!(self, Self::On | Self::TurningOff)
+    }
+
+    fn transition(&self) -> Self {
+        match self {
+            Self::TurningOff => Self::Off,
+            Self::TurningOn => Self::On,
+            other => *other,
+        }
+    }
 }
