@@ -90,8 +90,8 @@ impl<T> LightArray<T> {
     where
         F: FnMut(&mut T),
     {
-        for row in &mut self.array[range.x_range()] {
-            for light in &mut row[range.y_range()] {
+        for col in &mut self.array[range.x_range()] {
+            for light in &mut col[range.y_range()] {
                 instruction(light);
             }
         }
