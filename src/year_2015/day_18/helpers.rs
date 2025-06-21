@@ -1,4 +1,5 @@
 use std::cmp::min;
+use std::ops::RangeInclusive;
 
 pub struct LightArray {
     width: usize,
@@ -77,14 +78,8 @@ impl LightArray {
     fn count_neighbours(&self, center_x: usize, center_y: usize) -> usize {
         let mut count = 0;
 
-        let x_min = center_x.saturating_sub(1);
-        let x_max = min(self.width - 1, center_x + 1);
-
-        let y_min = center_y.saturating_sub(1);
-        let y_max = min(self.height - 1, center_y + 1);
-
-        for x in x_min..=x_max {
-            for y in y_min..=y_max {
+        for x in Self::get_neighbour_range(center_x, self.width) {
+            for y in Self::get_neighbour_range(center_y, self.height) {
                 if (x != center_x || y != center_y) && self.array[x][y].is_on() {
                     count += 1;
                 }
@@ -92,6 +87,13 @@ impl LightArray {
         }
 
         count
+    }
+
+    fn get_neighbour_range(this: usize, max_idx: usize) -> RangeInclusive<usize> {
+        let r_min = this.saturating_sub(1);
+        let r_max = min(max_idx - 1, this + 1);
+
+        r_min..=r_max
     }
 
     pub fn count_lit(&self) -> usize {
