@@ -17,10 +17,11 @@ impl Default for Parser {
 
 impl Parser {
     pub fn parse(&self, input: &str) -> anyhow::Result<Aunt> {
-        let index = match self.re_index.captures(input) {
-            Some(caps) => caps["index"].parse()?,
-            None => anyhow::bail!("could not parse index"),
+        let Some(caps) = self.re_index.captures(input) else {
+            anyhow::bail!("could not parse index");
         };
+
+        let index = caps["index"].parse()?;
 
         let mut params = HashMap::new();
 

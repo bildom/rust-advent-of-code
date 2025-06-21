@@ -15,23 +15,22 @@ impl Default for Parser {
 
 impl Parser {
     pub fn parse(&self, input: &str) -> anyhow::Result<Ingredient> {
-        let result = match self.re.captures(input) {
-            Some(caps) => {
-                let capacity = caps["capacity"].parse()?;
-                let durability = caps["durability"].parse()?;
-                let flavor = caps["flavor"].parse()?;
-                let texture = caps["texture"].parse()?;
-                let calories = caps["calories"].parse()?;
+        let Some(caps) = self.re.captures(input) else {
+            anyhow::bail!("could not parse input '{input}' as an ingredient");
+        };
 
-                Ingredient {
-                    capacity,
-                    durability,
-                    flavor,
-                    texture,
-                    calories,
-                }
-            }
-            None => anyhow::bail!("could not parse input '{input}' as an ingredient"),
+        let capacity = caps["capacity"].parse()?;
+        let durability = caps["durability"].parse()?;
+        let flavor = caps["flavor"].parse()?;
+        let texture = caps["texture"].parse()?;
+        let calories = caps["calories"].parse()?;
+
+        let result = Ingredient {
+            capacity,
+            durability,
+            flavor,
+            texture,
+            calories,
         };
 
         Ok(result)

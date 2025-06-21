@@ -15,19 +15,18 @@ impl Default for Parser {
 
 impl Parser {
     pub fn parse(&self, input: &str) -> anyhow::Result<Reindeer> {
-        let result = match self.re.captures(input) {
-            Some(caps) => {
-                let speed = caps["speed"].parse()?;
-                let fly_time = caps["fly_time"].parse()?;
-                let rest_time = caps["rest_time"].parse()?;
+        let Some(caps) = self.re.captures(input) else {
+            anyhow::bail!("could not parse reindeer data");
+        };
 
-                Reindeer {
-                    speed,
-                    fly_time,
-                    rest_time,
-                }
-            }
-            None => anyhow::bail!("could not parse reindeer data"),
+        let speed = caps["speed"].parse()?;
+        let fly_time = caps["fly_time"].parse()?;
+        let rest_time = caps["rest_time"].parse()?;
+
+        let result = Reindeer {
+            speed,
+            fly_time,
+            rest_time,
         };
 
         Ok(result)

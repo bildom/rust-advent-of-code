@@ -70,6 +70,9 @@ mod tests {
         let solution = Puzzle.solve(input).unwrap();
 
         assert_eq!(solution.results[0], expected_molecule_count.to_string());
-        assert_eq!(solution.results[1], expected_min_synthesis_steps.to_string());
+        assert_eq!(
+            solution.results[1],
+            expected_min_synthesis_steps.to_string()
+        );
     }
 }

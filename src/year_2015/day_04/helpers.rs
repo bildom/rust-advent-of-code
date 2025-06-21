@@ -36,10 +36,11 @@ impl Hasher {
             }
         }
 
-        match result {
-            Some(number) => Ok(number),
-            None => anyhow::bail!("could not calculate the suffix for {text}"),
-        }
+        let Some(number) = result else {
+            anyhow::bail!("could not calculate the suffix for {text}");
+        };
+
+        Ok(number)
     }
 
     pub fn starts_with_5_zeros(hash: &[u8]) -> bool {

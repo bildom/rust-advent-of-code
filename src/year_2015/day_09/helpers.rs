@@ -19,19 +19,18 @@ impl Default for Parser {
 
 impl Parser {
     pub fn parse(&self, input: &str) -> anyhow::Result<Distance> {
-        let result = match self.re.captures(input) {
-            Some(caps) => {
-                let location_1 = caps["location1"].to_string();
-                let location_2 = caps["location2"].to_string();
-                let distance = caps["distance"].parse()?;
+        let Some(caps) = self.re.captures(input) else {
+            anyhow::bail!("invalid input '{input}'");
+        };
 
-                Distance {
-                    location_1,
-                    location_2,
-                    value: distance,
-                }
-            }
-            None => anyhow::bail!("invalid input '{input}'"),
+        let location_1 = caps["location1"].to_string();
+        let location_2 = caps["location2"].to_string();
+        let distance = caps["distance"].parse()?;
+
+        let result = Distance {
+            location_1,
+            location_2,
+            value: distance,
         };
 
         Ok(result)

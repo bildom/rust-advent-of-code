@@ -25,10 +25,11 @@ impl StringParser {
                 _ => None,
             };
 
-            match byte {
-                Some(byte) => parsed.push(byte),
-                None => anyhow::bail!("invalid escape sequence in {input}"),
-            }
+            let Some(byte) = byte else {
+                anyhow::bail!("invalid escape sequence in {input}");
+            };
+
+            parsed.push(byte);
         }
 
         Ok(parsed)

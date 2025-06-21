@@ -14,19 +14,18 @@ impl Default for Parser {
 
 impl Parser {
     pub fn parse(&self, text: &str) -> anyhow::Result<Present> {
-        let result = match self.re.captures(text) {
-            Some(caps) => {
-                let length = caps["length"].parse()?;
-                let width = caps["width"].parse()?;
-                let height = caps["height"].parse()?;
+        let Some(caps) = self.re.captures(text) else {
+            anyhow::bail!("could not parse dimensions: '{text}'");
+        };
 
-                Present {
-                    length,
-                    width,
-                    height,
-                }
-            }
-            None => anyhow::bail!("could not parse dimensions: '{text}'"),
+        let length = caps["length"].parse()?;
+        let width = caps["width"].parse()?;
+        let height = caps["height"].parse()?;
+
+        let result = Present {
+            length,
+            width,
+            height,
         };
 
         Ok(result)

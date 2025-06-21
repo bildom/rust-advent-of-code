@@ -18,10 +18,11 @@ pub fn process(args: Args) -> anyhow::Result<Answer> {
         _ => None,
     };
 
-    let answer = match solver {
-        Some(solver) => solver.solve(&input)?,
-        None => anyhow::bail!("no solver found for: year {year}, day {day}"),
+    let Some(solver) = solver else {
+        anyhow::bail!("no solver found for: year {year}, day {day}");
     };
+
+    let answer = solver.solve(&input)?;
 
     Ok(answer)
 }

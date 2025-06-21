@@ -17,26 +17,25 @@ impl Default for Parser {
 
 impl Parser {
     pub fn parse(&self, input: &str) -> anyhow::Result<Relation> {
-        let result = match self.re.captures(input) {
-            Some(caps) => {
-                let person = caps["person"].to_string();
-                let neighbour = caps["neighbour"].to_string();
-                let amount = caps["amount"].parse()?;
-                let instruction = &caps["instruction"];
+        let Some(caps) = self.re.captures(input) else {
+            anyhow::bail!("could not parse input '{input}'");
+        };
 
-                let happiness_gain: i32 = match instruction {
-                    "gain" => amount,
-                    "lose" => -amount,
-                    other => anyhow::bail!("invalid instruction: {other}"),
-                };
+        let person = caps["person"].to_string();
+        let neighbour = caps["neighbour"].to_string();
+        let amount = caps["amount"].parse()?;
+        let instruction = &caps["instruction"];
 
-                Relation {
-                    person,
-                    neighbour,
-                    happiness_gain,
-                }
-            }
-            None => anyhow::bail!("could not parse input '{input}'"),
+        let happiness_gain: i32 = match instruction {
+            "gain" => amount,
+            "lose" => -amount,
+            other => anyhow::bail!("invalid instruction: {other}"),
+        };
+
+        let result = Relation {
+            person,
+            neighbour,
+            happiness_gain,
         };
 
         Ok(result)
